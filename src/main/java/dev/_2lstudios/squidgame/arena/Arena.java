@@ -3,6 +3,8 @@ package dev._2lstudios.squidgame.arena;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev._2lstudios.squidgame.arena.games.*;
+import io.papermc.lib.PaperLib;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -12,11 +14,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
-import dev._2lstudios.squidgame.arena.games.ArenaGameBase;
-import dev._2lstudios.squidgame.arena.games.G1RedGreenLightGame;
-import dev._2lstudios.squidgame.arena.games.G3BattleGame;
-import dev._2lstudios.squidgame.arena.games.G6GlassesGame;
-import dev._2lstudios.squidgame.arena.games.G7SquidGame;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 
 public class Arena {
@@ -70,12 +67,15 @@ public class Arena {
         this.games.clear();
 
         final int game1Time = mainConfig.getInt("game-settings.game-time.1", 60);
+        final int game2Time = mainConfig.getInt("game-settings.game-time.2", 60);
         final int game3Time = mainConfig.getInt("game-settings.game-time.3", 60);
         final int game6Time = mainConfig.getInt("game-settings.game-time.6", 60);
         final int game7Time = mainConfig.getInt("game-settings.game-time.7", 60);
 
         if (game1Time > 0)
             this.games.add(new G1RedGreenLightGame(this, game1Time));
+        if(game2Time > 0)
+            this.games.add(new G2CookieGame(this, game2Time));
         if (game3Time > 0)
             this.games.add(new G3BattleGame(this, game3Time));
         if (game6Time > 0)
@@ -170,7 +170,10 @@ public class Arena {
         if (!this.players.contains(player) && !this.spectators.contains(player)) {
             this.joined = player.getBukkitPlayer().getName();
             this.players.add(player);
-            player.getBukkitPlayer().teleport(this.getSpawnPosition());
+            PaperLib.teleportAsync(
+                    player.getBukkitPlayer(),
+                    this.getSpawnPosition()
+            );
             player.getBukkitPlayer().setFoodLevel(20);
             player.getBukkitPlayer().setHealth(20);
             player.setArena(this);

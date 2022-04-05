@@ -18,12 +18,8 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
         enabled = true;
     }
 
-    public String getPlugin() {
-        return plugin.getDescription().getName();
-    }
-
     public String getIdentifier() {
-        return this.getPlugin().toLowerCase();
+        return plugin.getDescription().getName().toLowerCase();
     }
 
     public String getAuthor() {
@@ -47,7 +43,6 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
     private String requestPlayerPlaceholder(final SquidPlayer player, final String identifier) {
         switch (identifier) {
             case "wins":
-                return "0";
             case "deaths":
                 return "0";
             default:

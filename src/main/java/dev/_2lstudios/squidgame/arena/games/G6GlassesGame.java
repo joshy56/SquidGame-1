@@ -22,7 +22,7 @@ public class G6GlassesGame extends ArenaGameBase {
     private Cuboid glassZone;
     private Cuboid goalZone;
 
-    private List<Block> fakeBlocks;
+    private final List<Block> fakeBlocks;
 
     public G6GlassesGame(final Arena arena, final int durationTime) {
         super("§bGlasses", "sixth", durationTime, arena);

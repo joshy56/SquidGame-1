@@ -1,5 +1,6 @@
 package dev._2lstudios.jelly.player;
 
+import io.papermc.lib.PaperLib;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
@@ -29,7 +30,10 @@ public class PluginPlayer {
     }
 
     public void teleport(final Location loc) {
-        this.getBukkitPlayer().teleport(loc);
+        PaperLib.teleportAsync(
+                this.getBukkitPlayer(),
+                loc
+        );
     }
 
     public void sendTitle(final String title, final String subtitle, final int duration) {

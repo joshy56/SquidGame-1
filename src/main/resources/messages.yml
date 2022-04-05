@@ -62,6 +62,21 @@ games:
     red-light:
       title: "&4&lRed Light"
       subtitle: "&cDO NOT MOVE"
+  second:
+    name: "&6Honeycomb"
+    tutorial:
+      "1":
+        "title": "&6&l1"
+        "subtitle": "&eTutorial #1"
+      "2":
+        "title": "&6&l2"
+        "subtitle": "&eTutorial #2"
+      "3":
+        "title": "&6&l3"
+        "subtitle": "&eTutorial #3"
+      "4":
+        "title": "&6&l4"
+        "subtitle": "&eTutorial #4"
   third:
     name: "&cBattle"
     tutorial:
@@ -80,16 +95,16 @@ games:
   sixth:
     name: "&bGlasses"
     tutorial:
-      "2":
+      "1":
         title: "&6&l1"
         subtitle: "&eWhen the game starts, 2 rows of platforms will be generated"
-      "3": 
+      "2":
         title: "&6&l2"
         subtitle: "&eOf each pair of platforms, one will contain a trap"
-      "4":
+      "3":
         title: "&6&l3"
         subtitle: "&eThat when stepped on, it will fall"
-      "1":
+      "4":
         title: "&6&l4"
         subtitle: "&eTo win you must get to the other side of the arena"
   seventh:

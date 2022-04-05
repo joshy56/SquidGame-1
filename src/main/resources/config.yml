@@ -10,6 +10,7 @@ game-settings:
   finishing-time: 5
   game-time:
     "1": 60
+    "2": 60
     "3": 60
     "6": 60
     "7": 600

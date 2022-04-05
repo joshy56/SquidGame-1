@@ -1,10 +1,9 @@
 package dev._2lstudios.squidgame.gui;
 
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-
 import dev._2lstudios.jelly.gui.InventoryGUI;
 import dev._2lstudios.squidgame.arena.Arena;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
 
 public class EditArenaGUI extends InventoryGUI {
 
@@ -17,13 +16,15 @@ public class EditArenaGUI extends InventoryGUI {
 
     @Override
     public void init() {
-        this.addItem(1,
+        this.addItem(
+                1,
                 this.createItem("§eFirst game", Material.ENDER_PEARL, "§r\n§aGreen Light§7, §cRed Light §7game.\n§r"),
-                2, 2);
+                2, 2
+        );
 
-        this.addItem(2, this.createItem("§cComing soon", Material.COAL), 3, 2);
+        this.addItem(2, this.createItem("§cSecond game", Material.IRON_PICKAXE), 3, 2);
         this.addItem(3, this.createItem("§eThird Game", Material.DIAMOND_SWORD,
-                "§r\n§7This game does not require configuration.\n§7It uses the values from the §bintermission lobby§7.\n§r"),
+                        "§r\n§7This game does not require configuration.\n§7It uses the values from the §bintermission lobby§7.\n§r"),
                 4, 2);
         this.addItem(4, this.createItem("§cComing soon", Material.COAL), 5, 2);
         this.addItem(5, this.createItem("§cComing soon", Material.COAL), 6, 2);
@@ -40,21 +41,24 @@ public class EditArenaGUI extends InventoryGUI {
     @Override
     public void handle(int id, Player player) {
         switch (id) {
-        case 0:
-            new EditArenaWaitingLobbyGUI(this.arena, this).open(player);
-            break;
-        case 1:
-            new EditArenaGame1GUI(this.arena, this).open(player);
-            break;
-        case 6:
-            new EditArenaGame6GUI(this.arena, this).open(player);
-            break;
-        case 7:
-            new EditArenaGame7GUI(this.arena, this).open(player);
-            break;
-        default:
-            this.close(player);
-            break;
+            case 0:
+                new EditArenaWaitingLobbyGUI(this.arena, this).open(player);
+                break;
+            case 1:
+                new EditArenaGame1GUI(this.arena, this).open(player);
+                break;
+            case 2:
+                new EditArenaGame2GUI(arena, this).open(player);
+                break;
+            case 6:
+                new EditArenaGame6GUI(this.arena, this).open(player);
+                break;
+            case 7:
+                new EditArenaGame7GUI(this.arena, this).open(player);
+                break;
+            default:
+                this.close(player);
+                break;
         }
     }
 }

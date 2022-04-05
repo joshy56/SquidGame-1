@@ -1,14 +1,24 @@
 package dev._2lstudios.squidgame.listeners;
 
+import dev._2lstudios.squidgame.arena.Arena;
+import dev._2lstudios.squidgame.arena.ArenaState;
+import dev._2lstudios.squidgame.arena.games.ArenaGameBase;
+import dev._2lstudios.squidgame.arena.games.G2CookieGame;
+import fr.skytasul.guardianbeam.Laser;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.player.PlayerWand;
 import dev._2lstudios.squidgame.player.SquidPlayer;
+import org.bukkit.util.RayTraceResult;
+
+import java.util.Optional;
 
 public class PlayerInteractListener implements Listener {
 
@@ -34,6 +44,42 @@ public class PlayerInteractListener implements Listener {
             }
 
             e.setCancelled(true);
+            return;
+        }
+
+        Arena arena = player.getArena();
+        if (arena == null || player.isSpectator())
+            return;
+
+        ArenaGameBase currentGame = arena.getCurrentGame();
+
+        /* Game 2: Handling */
+        if (currentGame instanceof G2CookieGame) {
+            if (arena.getState() != ArenaState.IN_GAME)
+                return;
+
+            Optional.ofNullable(player.getBukkitPlayer().rayTraceBlocks(32))
+                    .map(RayTraceResult::getHitBlock)
+                    .ifPresent(
+                            block -> {
+                                Bukkit.getPluginManager().callEvent(
+                                        new BlockBreakEvent(block, player.getBukkitPlayer())
+                                );
+                                try {
+                                    Laser laser = Laser.LaserType.GUARDIAN.create(
+                                            player.getBukkitPlayer().getEyeLocation(),
+                                            block.getLocation(),
+                                            2,
+                                            0
+                                    );
+                                    laser.durationInTicks();
+                                    laser.start(this.plugin);
+                                } catch (ReflectiveOperationException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                    );
+
         }
     }
 }

@@ -69,11 +69,9 @@ public class G1RedGreenLightGame extends ArenaGameBase {
             Bukkit.getScheduler().runTaskLater(SquidGame.getInstance(), () -> {
                 this.canWalk = false;
                 final int waitTime = NumberUtils.randomNumber(2, 5);
-                Bukkit.getScheduler().runTaskLater(SquidGame.getInstance(), () -> {
-                    singDoll();
-                }, waitTime * 20);
+                Bukkit.getScheduler().runTaskLater(SquidGame.getInstance(), this::singDoll, waitTime * 20L);
             }, 20);
-        }, time * 20);
+        }, time * 20L);
     }
 
     @Override
