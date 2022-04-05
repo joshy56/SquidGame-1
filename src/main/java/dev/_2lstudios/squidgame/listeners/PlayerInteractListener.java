@@ -32,6 +32,7 @@ public class PlayerInteractListener implements Listener {
     public void onPlayerInteract(final PlayerInteractEvent e) {
         final SquidPlayer player = (SquidPlayer) this.plugin.getPlayerManager().getPlayer(e.getPlayer());
 
+        /* Player wand selection: Handling */
         if (player.getWand() != null && e.getItem() != null && e.getItem().getType().equals(Material.BLAZE_ROD)) {
             final PlayerWand wand = player.getWand();
 
