@@ -3,6 +3,7 @@ package dev._2lstudios.squidgame.gui;
 import dev._2lstudios.jelly.gui.InventoryGUI;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.games.G2CookieGame;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -16,6 +17,8 @@ public class ShapeSelectorGui extends InventoryGUI {
 
     public ShapeSelectorGui(final Arena arena, final InventoryGUI prevGui) {
         super("§d§lArena §f" + arena.getName(), 45, prevGui);
+        Bukkit.getConsoleSender()
+                .sendMessage("SquidGame#ShapeSelectorGUI(NewInstance)");
         this.arena = arena;
     }
 
@@ -90,23 +93,23 @@ public class ShapeSelectorGui extends InventoryGUI {
         switch (id){
             case 0: {
                 new EditShapeStatsGui(arena, G2CookieGame.Shape.CIRCLE, this).open(player);
-                break;
+                return;
             }
             case 1: {
                 new EditShapeStatsGui(arena, G2CookieGame.Shape.STAR, this).open(player);
-                break;
+                return;
             }
             case 2: {
                 new EditShapeStatsGui(arena, G2CookieGame.Shape.CUBE, this).open(player);
-                break;
+                return;
             }
             case 3: {
                 new EditShapeStatsGui(arena, G2CookieGame.Shape.TRIANGLE, this).open(player);
-                break;
+                return;
             }
             case 4: {
                 new EditShapeStatsGui(arena, G2CookieGame.Shape.UMBRELLA, this).open(player);
-                break;
+                return;
             }
         }
 
@@ -115,5 +118,6 @@ public class ShapeSelectorGui extends InventoryGUI {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        close(player);
     }
 }

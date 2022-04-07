@@ -25,12 +25,12 @@ public class EditArenaGame1GUI extends InventoryGUI {
     public void init() {
         this.addItem(0, this.createItem("§eSpawn point", Material.COMPASS, "§r\n§7Set at your current location\n§r"), 2,
                 2);
-        this.addItem(1, this.createItem("§eBarrier", Material.BEDROCK, "§r\n§7Set with your location wand\n§r"), 4, 2);
+        this.addItem(1, this.createItem("§eBarrier", Material.BEDROCK, "§r\n§eSpawn zone\n§6- §eSet with your location wand\n§r"), 4, 2);
         this.addItem(2, this.createItem("§eKill Zone", Material.ENDER_PEARL, "§r\n§7Set with your location wand\n§r"),
                 6, 2);
         this.addItem(3, this.createItem("§eGoal", Material.ARMOR_STAND, "§r\n§7Set with your location wand\n§r"), 8, 2);
 
-        this.addItem(99, this.createItem("§cBack", Material.BARRIER), 5, 4);
+        this.addItem(99, this.createItem("§eGo back", Material.BARRIER), 5, 4);
     }
 
     @Override

@@ -5,6 +5,7 @@ import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.player.PlayerWand;
 import dev._2lstudios.squidgame.player.SquidPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -55,29 +56,24 @@ public class EditArenaGame2GUI extends InventoryGUI {
     @Override
     public void handle(int id, Player player) {
         SquidPlayer squidPlayer = (SquidPlayer) SquidGame.getInstance().getPlayerManager().getPlayer(player);
-        PlayerWand wand = squidPlayer.getWand();
 
         if(id == 99){
             back(player);
             return;
         }
 
-        if(id == 0){
-
-        }
-        switch (id){
-            case 0: {
-                arena.getConfig().setLocation("games.second.spawn", player.getLocation(), false);
-                player.sendMessage("§eGame spawn§a set in your current location.");
-            }
-            case 1: {
-                arena.getConfig().set("games.second.shape.material-delimiter", player.getItemOnCursor());
-                player.sendMessage("§eGame shape delimiter§a set in your current item in cursor.");
-            }
-            case 2: {
-                new ShapeSelectorGui(arena, this).open(player);
-                break;
-            }
+        if(id == 0) {
+            arena.getConfig().setLocation("games.second.spawn", player.getLocation(), false);
+            player.sendMessage("§eGame spawn§a set in your current location.");
+        }else if(id == 1){
+            arena.getConfig().set("games.second.shape.material-delimiter", player.getItemOnCursor());
+            player.sendMessage("§eGame shape delimiter§a set in your current item in cursor.");
+        }else if(id == 2){
+            Bukkit.getConsoleSender().sendMessage(
+                    "SquidGame#EditArenaGame2GUI(PressedButton#2)"
+            );
+            new ShapeSelectorGui(arena, this).open(player);
+            return;
         }
 
         try{

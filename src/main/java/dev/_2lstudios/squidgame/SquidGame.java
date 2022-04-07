@@ -3,6 +3,7 @@ package dev._2lstudios.squidgame;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
 
 import dev._2lstudios.jelly.JellyPlugin;

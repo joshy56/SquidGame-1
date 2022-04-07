@@ -8,14 +8,17 @@ import dev._2lstudios.squidgame.arena.games.G2CookieGame;
 import dev._2lstudios.squidgame.player.PlayerWand;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import io.papermc.lib.PaperLib;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.BlockVector;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by joshy23 (justJoshy23 - joshy56) on 3/4/2022.
@@ -67,23 +70,44 @@ public class EditShapeStatsGui extends InventoryGUI {
 
         switch(id){
             case 0: {
-                arena.getConfig().setLocation("games.second.shapes. " + shape.name() + ".spawn", player.getLocation(), false);
+                arena.getConfig().setLocation("games.second.shapes." + shape.name() + ".spawn", player.getLocation(), false);
                 player.sendMessage("§eGame shape spawn§a set in your current location.");
+                break;
             }
             case 1: {
-                if(!wand.isComplete())
+                if(wand == null || !wand.isComplete()){
+                    player.sendMessage("§eNot has a wand selection§c give a wand with '/sg wand' and select an area.");
                     return;
-                Material delimiter = (Material) arena.getConfig().get("games.second.shape.material-delimiter");
+                }
+                ItemStack delimiter = arena.getConfig().getItemStack("games.second.shapes." + shape.name() + ".material-delimiter");
                 List<BlockVector> minePoints = new ArrayList<>();
                 BlockUtils.cuboid(
                         wand.getFirstPoint().toLocation(arena.getWorld()),
                         wand.getSecondPoint().toLocation(arena.getWorld()),
                         block -> {
-                            if(block.getType() == delimiter)
+                            Bukkit.getConsoleSender().sendMessage(
+                                    new String[]{
+                                            "BlockType= " + block.getType(),
+                                            "DelimiterType= " + delimiter.getType()
+                                    }
+                            );
+                            if(block.getType() == delimiter.getType())
                                 minePoints.add(block.getLocation().toVector().toBlockVector());
                         }
                 );
+                Bukkit.getConsoleSender().sendMessage(
+                        minePoints.toString()
+                );
                 shape.setPoints(minePoints);
+                arena.getConfig().set(
+                        "games.second.shapes." + shape.name() + ".mine-points",
+                        shape.getPoints()
+                                /*.stream()
+                                .map(BlockVector::serialize)
+                                .collect(Collectors.toList())*/
+                );
+                player.sendMessage("§eGame shape shoot points§a set in your current wand selection.");
+                break;
             }
         }
 
