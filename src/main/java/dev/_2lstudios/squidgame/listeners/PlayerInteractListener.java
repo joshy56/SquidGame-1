@@ -59,25 +59,33 @@ public class PlayerInteractListener implements Listener {
             if (arena.getState() != ArenaState.IN_GAME)
                 return;
 
+            Bukkit.getConsoleSender().sendMessage(
+                    "SG:Debug(PlayerInteractListener#Game2Handling)"
+            );
+
             Optional.ofNullable(player.getBukkitPlayer().rayTraceBlocks(32))
                     .map(RayTraceResult::getHitBlock)
                     .ifPresent(
                             block -> {
+                                Bukkit.getConsoleSender().sendMessage(
+                                        "SG:Debug(PlayerInteractListener#Game2BeamBlockHit)"
+                                );
+
                                 Bukkit.getPluginManager().callEvent(
                                         new BlockBreakEvent(block, player.getBukkitPlayer())
                                 );
-                                try {
-                                    Laser laser = Laser.LaserType.GUARDIAN.create(
+                                /*try {;
+                                    Laser laser = new Laser.GuardianLaser(
                                             player.getBukkitPlayer().getEyeLocation(),
                                             block.getLocation(),
-                                            2,
+                                            10,
                                             0
                                     );
                                     laser.durationInTicks();
                                     laser.start(this.plugin);
                                 } catch (ReflectiveOperationException ex) {
                                     ex.printStackTrace();
-                                }
+                                }*/
                             }
                     );
 

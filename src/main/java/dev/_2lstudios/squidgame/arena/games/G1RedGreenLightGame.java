@@ -13,6 +13,9 @@ import dev._2lstudios.jelly.utils.NumberUtils;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.player.SquidPlayer;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.Nullable;
 
 public class G1RedGreenLightGame extends ArenaGameBase {
 
@@ -23,10 +26,20 @@ public class G1RedGreenLightGame extends ArenaGameBase {
     private boolean canWalk = true;
     private boolean playing = false;
 
+    private static final PotionEffect NIGHT_VISION = new PotionEffect(
+            PotionEffectType.NIGHT_VISION,
+            Integer.MAX_VALUE,
+            1
+    )
+            .withAmbient(false)
+            .withParticles(false)
+            .withIcon(true);
+
     public G1RedGreenLightGame(final Arena arena, final int durationTime) {
         super("§aGreen Light §7| §cRed Light", "first", durationTime, arena);
     }
 
+    @Nullable
     public Cuboid getBarrier() {
         if (this.barrier == null) {
             this.barrier = this.getArena().getConfig().getCuboid("games.first.barrier");
@@ -35,6 +48,7 @@ public class G1RedGreenLightGame extends ArenaGameBase {
         return this.barrier;
     }
 
+    @Nullable
     public Cuboid getKillZone() {
         if (this.killZone == null) {
             this.killZone = this.getArena().getConfig().getCuboid("games.first.killzone");
@@ -43,6 +57,7 @@ public class G1RedGreenLightGame extends ArenaGameBase {
         return this.killZone;
     }
 
+    @Nullable
     public Cuboid getGoalZone() {
         if (this.goalZone == null) {
             this.goalZone = this.getArena().getConfig().getCuboid("games.first.goal");
@@ -79,11 +94,17 @@ public class G1RedGreenLightGame extends ArenaGameBase {
         this.playing = true;
         this.singDoll();
         this.getArena().setPvPAllowed(true);
+        getArena().getAllPlayers().forEach(
+                player -> NIGHT_VISION.apply(player.getBukkitPlayer())
+        );
     }
 
     @Override
     public void onStop() {
         this.playing = false;
+        getArena().getAllPlayers().forEach(
+                player -> player.getBukkitPlayer().removePotionEffect(NIGHT_VISION.getType())
+        );
     }
 
     @Override

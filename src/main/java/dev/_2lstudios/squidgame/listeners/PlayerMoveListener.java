@@ -15,6 +15,8 @@ import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 
+import java.util.Optional;
+
 public class PlayerMoveListener implements Listener {
 
     private final SquidGame plugin;
@@ -25,7 +27,7 @@ public class PlayerMoveListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerMove(final PlayerMoveEvent e) {
-        if(e.getTo() == null)
+        if (e.getTo() == null)
             return;
         if (e.getFrom().distance(e.getTo()) <= 0.015)
             return;
@@ -43,18 +45,23 @@ public class PlayerMoveListener implements Listener {
             final G1RedGreenLightGame game = (G1RedGreenLightGame) currentGame;
 
             if (arena.getState() == ArenaState.EXPLAIN_GAME) {
-                if (game.getBarrier().isBetween(e.getTo())) {
-                    e.setCancelled(true);
-                    e.setTo(e.getFrom());
-                }
-            }
-
-            else if (arena.getState() == ArenaState.IN_GAME) {
+                Optional.ofNullable(game.getBarrier())
+                        .filter(spawnZone -> !spawnZone.isBetween(e.getTo()))
+                        .ifPresent(
+                                spawnZone -> {
+                                    e.setCancelled(true);
+                                    if (spawnZone.isBetween(e.getFrom()))
+                                        e.setTo(e.getFrom());
+                                    else
+                                        e.setTo(game.getSpawnPosition());
+                                }
+                        );
+            } else if (arena.getState() == ArenaState.IN_GAME) {
                 if (!game.isCanWalk()) {
                     final Vector3 playerPosition = new Vector3(e.getTo().getX(), e.getTo().getY(), e.getTo().getZ());
-                    if (game.getKillZone().isBetween(playerPosition)) {
-                        arena.killPlayer(player);
-                    }
+                    Optional.ofNullable(game.getKillZone())
+                            .filter(killZone -> killZone.isBetween(playerPosition))
+                            .ifPresent(killZone -> arena.killPlayer(player));
                 }
             }
         }

@@ -8,8 +8,10 @@ import dev._2lstudios.squidgame.player.SquidPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Created by joshy23 (justJoshy23 - joshy56) on 2/4/2022.
@@ -66,7 +68,19 @@ public class EditArenaGame2GUI extends InventoryGUI {
             arena.getConfig().setLocation("games.second.spawn", player.getLocation(), false);
             player.sendMessage("§eGame spawn§a set in your current location.");
         }else if(id == 1){
-            arena.getConfig().set("games.second.shape.material-delimiter", player.getItemOnCursor());
+            Material material = Optional.ofNullable(player.getItemOnCursor())
+                            .map(ItemStack::getType)
+                                    .orElse(Material.AIR);
+            if(material.isAir()){
+                close(player);
+                player.sendMessage("§eGame shape delimiter§c can't be air.");
+                return;
+            }else if(!material.isBlock()){
+                close(player);
+                player.sendMessage("§eGame shape delimiter§c must be and placable block.");
+                return;
+            }
+            arena.getConfig().set("games.second.shape.material-delimiter", material.name());
             player.sendMessage("§eGame shape delimiter§a set in your current item in cursor.");
         }else if(id == 2){
             Bukkit.getConsoleSender().sendMessage(

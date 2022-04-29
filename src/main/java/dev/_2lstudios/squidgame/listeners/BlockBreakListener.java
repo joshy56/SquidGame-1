@@ -3,6 +3,7 @@ package dev._2lstudios.squidgame.listeners;
 import dev._2lstudios.squidgame.arena.ArenaState;
 import dev._2lstudios.squidgame.arena.games.ArenaGameBase;
 import dev._2lstudios.squidgame.arena.games.G2CookieGame;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -42,6 +43,10 @@ public class BlockBreakListener implements Listener {
             if(arena.getState() != ArenaState.IN_GAME)
                 return;
 
+            Bukkit.getConsoleSender().sendMessage(
+                    "SG:Debug(BlockBreakListener#Game2Handling)"
+            );
+
             G2CookieGame cookieGame = (G2CookieGame) currentGame;
             Map.Entry<G2CookieGame.Shape, Integer> shape = cookieGame.getShapeAndProgressOf(squidPlayer);
 
@@ -52,8 +57,12 @@ public class BlockBreakListener implements Listener {
                     squidPlayer.sendTitle("events.game-pass.title", "events.game-pass.subtitle", 3);
                     squidPlayer.playSound(
                             arena.getMainConfig().getSound("game-settings.sounds.player-pass-game", "LEVELUP"));
-                } else
+                } else {
+                    Bukkit.getConsoleSender().sendMessage(
+                            "SG:Debug(BlockBreakListener#Game2BlockBreakAnimation)"
+                    );
                     bukkitPlayer.sendBlockChange(e.getBlock().getLocation(), Material.AIR.createBlockData());
+                }
             }
             else
                 arena.killPlayer(squidPlayer, true);

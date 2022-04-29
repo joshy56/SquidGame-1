@@ -52,9 +52,9 @@ public class BlockUtils {
         int zMax = Math.max(point1.getBlockZ(), point2.getBlockZ());
         World world = point1.getWorld();
 
-        for (int x = xMin; x < xMax; x++) {
-            for (int y = yMin; y < yMax; y++) {
-                for (int z = zMin; z < zMax; z++) {
+        for (int x = xMin; x <= xMax; x++) {
+            for (int y = yMin; y <= yMax; y++) {
+                for (int z = zMin; z <= zMax; z++) {
                     visitor.accept(world.getBlockAt(x,y,z));
                 }
             }

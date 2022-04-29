@@ -79,24 +79,19 @@ public class EditShapeStatsGui extends InventoryGUI {
                     player.sendMessage("§eNot has a wand selection§c give a wand with '/sg wand' and select an area.");
                     return;
                 }
-                ItemStack delimiter = arena.getConfig().getItemStack("games.second.shapes." + shape.name() + ".material-delimiter");
+                ItemStack delimiter = arena.getConfig().getItemStack("games.second.shape.material-delimiter");
+                if(delimiter == null || delimiter.getType() == Material.AIR) {
+                    player.sendMessage("§eShape line not set or invalid§c set shape line with the arena editor.");
+                    return;
+                }
                 List<BlockVector> minePoints = new ArrayList<>();
                 BlockUtils.cuboid(
                         wand.getFirstPoint().toLocation(arena.getWorld()),
                         wand.getSecondPoint().toLocation(arena.getWorld()),
                         block -> {
-                            Bukkit.getConsoleSender().sendMessage(
-                                    new String[]{
-                                            "BlockType= " + block.getType(),
-                                            "DelimiterType= " + delimiter.getType()
-                                    }
-                            );
                             if(block.getType() == delimiter.getType())
                                 minePoints.add(block.getLocation().toVector().toBlockVector());
                         }
-                );
-                Bukkit.getConsoleSender().sendMessage(
-                        minePoints.toString()
                 );
                 shape.setPoints(minePoints);
                 arena.getConfig().set(
