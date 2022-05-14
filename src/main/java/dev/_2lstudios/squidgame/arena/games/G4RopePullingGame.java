@@ -1,10 +1,12 @@
 package dev._2lstudios.squidgame.arena.games;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
+import dev._2lstudios.squidgame.arena.ArenaState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
@@ -24,13 +26,13 @@ import java.util.stream.Collector;
  */
 public class G4RopePullingGame extends ArenaGameBase {
     private AtomicReference<Pointer> actualPointer;
-    private ArrayDeque<Pointer> pointers;
     private ListIterator<Pointer> iterator;
     private boolean returning;
-    private int timeBetweenFrame;
+    private Integer timeBetweenFrame;
 
     public G4RopePullingGame(String name, String configKey, int gameTime, Arena arena) {
         super("§3Tug o' war", "four", gameTime, arena);
+        getPointers();
     }
 
     public List<Title> getTitles() {
@@ -41,8 +43,42 @@ public class G4RopePullingGame extends ArenaGameBase {
         if (iterator == null) {
             //Take list of pointers from the config
             //Init iterator using iterator() method from the list get previously
+            iterator = Lists.newArrayList(
+                    new Pointer(
+                            Component.text('|'),
+                            Component.text('#'),
+                            1
+                    ),
+                    new Pointer(
+                            Component.text('|'),
+                            Component.text('#'),
+                            2
+                    ),
+                    new Pointer(
+                            Component.text('|'),
+                            Component.text('#'),
+                            3
+                    ),
+                    new Pointer(
+                            Component.text('|'),
+                            Component.text('#'),
+                            2
+                    ),
+                    new Pointer(
+                            Component.text('|'),
+                            Component.text('#'),
+                            1
+                    )
+            ).listIterator();
         }
         return Lists.newArrayList(iterator);
+    }
+
+    public int getTimeBetweenFrame(){
+        if(timeBetweenFrame == null){
+            timeBetweenFrame = 10;
+        }
+        return timeBetweenFrame;
     }
 
     public final Pointer getActualPointer() {
@@ -53,6 +89,8 @@ public class G4RopePullingGame extends ArenaGameBase {
         Bukkit.getScheduler().runTaskLater(
                 JavaPlugin.getPlugin(SquidGame.class),
                 task -> {
+                    if(getArena().getState() == ArenaState.FINISHING_GAME)
+                        return;
                     Pointer pointer = actualPointer.get();
                     getTitles().forEach(
                             title -> getArena().getPlayers().forEach(
@@ -70,7 +108,7 @@ public class G4RopePullingGame extends ArenaGameBase {
                     actualPointer.set(pointer);
                     dispenseTitleAnimation();
                 },
-                timeBetweenFrame
+                getTimeBetweenFrame()
         );
     }
 
@@ -81,7 +119,7 @@ public class G4RopePullingGame extends ArenaGameBase {
                         Title.title(
                                 right.getVisualRepresentation(),
                                 Component.empty(),
-                                Title.Times.of(Duration.ZERO, Duration.ofMillis(right.getWeight()), Duration.ZERO)
+                                Title.Times.of(Duration.ZERO, Duration.ofMillis(getTimeBetweenFrame()), Duration.ZERO)
                         )
                 ),
                 (left, right) -> {
@@ -89,6 +127,11 @@ public class G4RopePullingGame extends ArenaGameBase {
                     return right;
                 }
         );
+    }
+
+    @Override
+    public void onStart() {
+        dispenseTitleAnimation();
     }
 
     public final class Pointer {
