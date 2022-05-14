@@ -1,20 +1,20 @@
 package dev._2lstudios.squidgame.arena.games;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
+import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -25,14 +25,23 @@ import java.util.stream.Collector;
  * Created by joshy23 (justJoshy23 - joshy56) on 29/3/2022.
  */
 public class G4RopePullingGame extends ArenaGameBase {
-    private AtomicReference<Pointer> actualPointer;
+    private final AtomicReference<Pointer> actualPointer;
     private ListIterator<Pointer> iterator;
     private boolean returning;
     private Integer timeBetweenFrame;
 
-    public G4RopePullingGame(String name, String configKey, int gameTime, Arena arena) {
+    public G4RopePullingGame(Arena arena, int gameTime) {
         super("§3Tug o' war", "four", gameTime, arena);
         getPointers();
+        actualPointer = new AtomicReference<>(Pointer.empty());
+    }
+
+    @Override
+    public Location getSpawnPosition() {
+        final Configuration config = this.getArena().getConfig();
+        final Location location = config.getLocation("arena.waiting_room", false);
+        location.setWorld(this.getArena().getWorld());
+        return location;
     }
 
     public List<Title> getTitles() {
@@ -74,8 +83,8 @@ public class G4RopePullingGame extends ArenaGameBase {
         return Lists.newArrayList(iterator);
     }
 
-    public int getTimeBetweenFrame(){
-        if(timeBetweenFrame == null){
+    public int getTimeBetweenFrame() {
+        if (timeBetweenFrame == null) {
             timeBetweenFrame = 10;
         }
         return timeBetweenFrame;
@@ -89,7 +98,7 @@ public class G4RopePullingGame extends ArenaGameBase {
         Bukkit.getScheduler().runTaskLater(
                 JavaPlugin.getPlugin(SquidGame.class),
                 task -> {
-                    if(getArena().getState() == ArenaState.FINISHING_GAME)
+                    if (getArena().getState() == ArenaState.FINISHING_GAME)
                         return;
                     Pointer pointer = actualPointer.get();
                     getTitles().forEach(
@@ -134,11 +143,20 @@ public class G4RopePullingGame extends ArenaGameBase {
         dispenseTitleAnimation();
     }
 
-    public final class Pointer {
+    public static final class Pointer {
         private final Component visualRepresentation;
         private final Component hoverRepresentation;
         private final Integer weight;
         private boolean hovered;
+        private static final Pointer EMPTY;
+
+        static {
+            EMPTY = new Pointer(
+                    Component.empty(),
+                    Component.empty(),
+                    0
+            );
+        }
 
         public Pointer(final @NotNull Component visualRepresentation, final @NotNull Component hoverRepresentation, final @NotNull Integer weight) {
             this.visualRepresentation = Preconditions.checkNotNull(visualRepresentation);
@@ -166,5 +184,10 @@ public class G4RopePullingGame extends ArenaGameBase {
         public Integer getWeight() {
             return weight;
         }
+
+        public static Pointer empty() {
+            return EMPTY;
+        }
+
     }
 }

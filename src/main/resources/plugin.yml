@@ -9,6 +9,8 @@ softdepend:
   - "PlaceholderAPI"
   - "SwiftBoard"
 url: ${url}
+authors:
+  - "joshy23"
 commands:
   squidgame:
     aliases: ["sg", "sq", "squid"]

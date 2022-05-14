@@ -1,9 +1,9 @@
 package dev._2lstudios.squidgame.arena;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import dev._2lstudios.jelly.config.Configuration;
+import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.games.*;
+import dev._2lstudios.squidgame.player.SquidPlayer;
 import io.papermc.lib.PaperLib;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -12,9 +12,8 @@ import org.bukkit.World;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import dev._2lstudios.jelly.config.Configuration;
-import dev._2lstudios.squidgame.SquidGame;
-import dev._2lstudios.squidgame.player.SquidPlayer;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Arena {
     private final List<SquidPlayer> players;
@@ -69,6 +68,7 @@ public class Arena {
         final int game1Time = mainConfig.getInt("game-settings.game-time.1", 60);
         final int game2Time = mainConfig.getInt("game-settings.game-time.2", 60);
         final int game3Time = mainConfig.getInt("game-settings.game-time.3", 60);
+        final int game4Time = mainConfig.getInt("game-settings.game-time.4", 60);
         final int game6Time = mainConfig.getInt("game-settings.game-time.6", 60);
         final int game7Time = mainConfig.getInt("game-settings.game-time.7", 60);
 
@@ -78,6 +78,8 @@ public class Arena {
             this.games.add(new G2CookieGame(this, game2Time));
         if (game3Time > 0)
             this.games.add(new G3BattleGame(this, game3Time));
+        if(game4Time > 0)
+            this.games.add(new G4RopePullingGame(this, game4Time));
         if (game6Time > 0)
             this.games.add(new G6GlassesGame(this, game6Time));
         if (game7Time > 0)

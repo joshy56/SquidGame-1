@@ -78,7 +78,7 @@ games:
         "title": "&6&l4"
         "subtitle": "&eTutorial #4"
   third:
-    name: "&cBattle"
+    name: "&cWanderer"
     tutorial:
       "1": 
         title: "&6&l1"
@@ -92,6 +92,36 @@ games:
       "4":
         title: "&6&l4"
         subtitle: "&eGood luck surviving"
+  four:
+    name: "&6Tug o' war"
+    tutorial:
+      "1":
+        "title": "&6&l1"
+        "subtitle": "&eTutorial #1"
+      "2":
+        "title": "&6&l2"
+        "subtitle": "&eTutorial #2"
+      "3":
+        "title": "&6&l3"
+        "subtitle": "&eTutorial #3"
+      "4":
+        "title": "&6&l4"
+        "subtitle": "&eTutorial #4"
+  fifth:
+    name: "&6Marbles"
+    tutorial:
+      "1":
+        "title": "&6&l1"
+        "subtitle": "&eTutorial #1"
+      "2":
+        "title": "&6&l2"
+        "subtitle": "&eTutorial #2"
+      "3":
+        "title": "&6&l3"
+        "subtitle": "&eTutorial #3"
+      "4":
+        "title": "&6&l4"
+        "subtitle": "&eTutorial #4"
   sixth:
     name: "&bGlasses"
     tutorial:

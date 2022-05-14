@@ -28,7 +28,7 @@ lobby:
     - "&eWins: &a%squidgame_player_wins%"
     - "&eDeaths: &c%squidgame_player_deaths%"
     - ""
-    - "&eplay.arkflame.com"
+    - "&eplay.server.com"
 waiting:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
@@ -36,7 +36,7 @@ waiting:
   - "&ePlayers: &a%squidgame_arena_players%/%squidgame_arena_maxplayers%"
   - "&eRequired to start: &c%squidgame_arena_required%"
   - ""
-  - "&eplay.arkflame.com"
+  - "&eplay.server.com"
 starting:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
@@ -44,7 +44,7 @@ starting:
   - "&ePlayers: &a%squidgame_arena_players%/%squidgame_arena_maxplayers%"
   - "&eStarting in: &c%squidgame_arena_time%"
   - ""
-  - "&eplay.arkflame.com"
+  - "&eplay.server.com"
 intermission:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
@@ -52,7 +52,7 @@ intermission:
   - "&ePlayers alive: &a%squidgame_arena_players%"
   - "&eNext game in: &b%squidgame_arena_time%"
   - ""
-  - "&eplay.arkflame.com"
+  - "&eplay.server.com"
 explain_game:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
@@ -62,7 +62,7 @@ explain_game:
   - ""
   - "&eGame starts in: &b%squidgame_arena_time%"
   - ""
-  - "&eplay.arkflame.com"
+  - "&eplay.server.com"
 in_game:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
@@ -72,7 +72,7 @@ in_game:
   - ""
   - "&eFinish in: &b%squidgame_arena_time%"
   - ""
-  - "&eplay.arkflame.com"
+  - "&eplay.server.com"
 finishing_game:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
@@ -82,11 +82,11 @@ finishing_game:
   - ""
   - "&eBack to lobby in: &b%squidgame_arena_time%"
   - ""
-  - "&eplay.arkflame.com"
+  - "&eplay.server.com"
 finishing_arena:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
   - ""
   - "&eWinner: &a%squidgame_arena_winner%"
   - ""
-  - "&eplay.arkflame.com"
+  - "&eplay.server.com"
