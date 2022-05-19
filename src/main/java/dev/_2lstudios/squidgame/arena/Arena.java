@@ -365,6 +365,7 @@ public class Arena {
         this.teleportAllPlayers(this.getSpawnPosition());
 
         this.setInternalTime(5);
+        this.setPvPAllowed(false);
         this.broadcastTitle("events.intermission.title", "events.intermission.subtitle");
     }
 }

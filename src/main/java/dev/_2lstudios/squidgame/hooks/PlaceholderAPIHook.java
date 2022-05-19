@@ -77,7 +77,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
             case "name":
                 return arena.getName();
             default:
-                return null;
+                return "";
         }
     }
 

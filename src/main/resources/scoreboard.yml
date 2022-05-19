@@ -67,6 +67,7 @@ in_game:
   - "&e&lSQUIDGAME"
   - "&7%squidgame_arena_name%"
   - ""
+  - "&eStage: &6%squidgame_arena_game%"
   - "&ePlayers alive: &a%squidgame_arena_players%"
   - "&eSpectators: &c%squidgame_arena_spectators%"
   - ""

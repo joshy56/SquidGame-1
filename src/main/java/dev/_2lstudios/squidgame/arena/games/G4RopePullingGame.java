@@ -45,7 +45,35 @@ public class G4RopePullingGame extends ArenaGameBase {
     }
 
     public List<Title> getTitles() {
-        return Streams.stream(iterator).collect(asTitles());
+        return getPointers().stream().collect(asTitles());
+    }
+
+    public Title getTitle() {
+        return getPointers().stream()
+                .map(
+                        pointer -> Title.title(
+                                pointer.getVisualRepresentation(),
+                                Component.empty(),
+                                Title.Times.of(
+                                        Duration.ZERO, Duration.ofMillis(getTimeBetweenFrame()), Duration.ZERO
+                                )
+                        )
+                )
+                .reduce(
+                        (left, right) -> Title.title(
+                                left.title().append(right.title()),
+                                left.subtitle().append(right.subtitle())
+                        )
+                )
+                .orElse(
+                        Title.title(
+                                Component.text("¡¡Sin apuntadores!!"),
+                                Component.empty(),
+                                Title.Times.of(
+                                        Duration.ZERO, Duration.ofMillis(getTimeBetweenFrame()), Duration.ZERO
+                                )
+                        )
+                );
     }
 
     public List<Pointer> getPointers() {
@@ -101,12 +129,12 @@ public class G4RopePullingGame extends ArenaGameBase {
                     if (getArena().getState() == ArenaState.FINISHING_GAME)
                         return;
                     Pointer pointer = actualPointer.get();
-                    getTitles().forEach(
-                            title -> getArena().getPlayers().forEach(
-                                    squidPlayer -> squidPlayer.getBukkitPlayer().showTitle(
-                                            title
-                                    )
-                            )
+
+                    getArena().getPlayers().forEach(
+                            squidPlayer -> squidPlayer.getBukkitPlayer().showTitle(getTitle())
+                    );
+                    Bukkit.getConsoleSender().sendMessage(
+                            "SG:Debug G4RopePullingGame:dispensedTitle(" + getTitle().toString() + ")"
                     );
 
                     iterator.set(pointer.hover(false));
@@ -134,6 +162,21 @@ public class G4RopePullingGame extends ArenaGameBase {
                 (left, right) -> {
                     left.addAll(right);
                     return right;
+                }
+        );
+    }
+
+    private Collector<Pointer, ?, Title> asTitle() {
+        return Collector.of(
+                () -> {
+                    return null;
+                },
+                (left, right) -> {
+
+                },
+                (left, right) -> {
+
+                    return left;
                 }
         );
     }
