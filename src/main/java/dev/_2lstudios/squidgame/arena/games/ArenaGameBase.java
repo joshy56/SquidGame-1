@@ -1,5 +1,6 @@
 package dev._2lstudios.squidgame.arena.games;
 
+import dev._2lstudios.squidgame.player.SquidPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
@@ -7,18 +8,23 @@ import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public abstract class ArenaGameBase {
 
     private final String name;
     private final String configKey;
     private final Arena arena;
     private final int gameTime;
+    private final Set<SquidPlayer> winners;
 
     public ArenaGameBase(final String name, final String configKey, final int gameTime, final Arena arena) {
         this.name = name;
         this.configKey = configKey;
         this.arena = arena;
         this.gameTime = gameTime;
+        this.winners = new HashSet<>();
     }
 
     public void onExplainStart() {
@@ -38,6 +44,10 @@ public abstract class ArenaGameBase {
 
     public void onStop() {
 
+    }
+
+    public Set<SquidPlayer> getWinners() {
+        return winners;
     }
 
     public Location getSpawnPosition() {

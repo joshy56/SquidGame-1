@@ -48,9 +48,7 @@ public class Arena {
     }
 
     public void resetArena() {
-        for (final SquidPlayer player : this.getAllPlayers()) {
-            this.removePlayer(player);
-        }
+        getAllPlayers().forEach(this::removePlayer);
 
         this.state = ArenaState.WAITING;
         this.currentGame = null;
