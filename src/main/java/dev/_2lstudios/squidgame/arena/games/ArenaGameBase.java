@@ -50,6 +50,10 @@ public abstract class ArenaGameBase {
         return winners;
     }
 
+    public void computeWinners(){
+
+    }
+
     public Location getSpawnPosition() {
         final Configuration config = this.arena.getConfig();
         final Location location = config.getLocation("games." + this.configKey + ".spawn", false);

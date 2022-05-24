@@ -3,6 +3,7 @@ package dev._2lstudios.squidgame.arena;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev._2lstudios.squidgame.hooks.PlaceholderAPIHook;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 
@@ -41,9 +42,7 @@ public class ArenaHandler {
     public void handlePlayerLeave(final SquidPlayer player) {
         if (this.arena.getState() == ArenaState.FINISHING_ARENA) {
             return;
-        }
-
-        else if (this.arena.getState() == ArenaState.WAITING || this.arena.getState() == ArenaState.STARTING) {
+        } else if (this.arena.getState() == ArenaState.WAITING || this.arena.getState() == ArenaState.STARTING) {
             arena.broadcastMessage("arena.leave");
 
             if (arena.getPlayers().size() < arena.getMinPlayers() && arena.getState() == ArenaState.STARTING) {
@@ -65,83 +64,87 @@ public class ArenaHandler {
             if (arena.getInternalTime() == 10) {
                 arena.broadcastMessage("arena.starting");
                 arena.broadcastSound(this.mainConfig.getSound("game-settings.sounds.arena-starting", "CLICK"));
-            }
-
-            else if (arena.getInternalTime() <= 5 && arena.getInternalTime() > 0) {
+            } else if (arena.getInternalTime() <= 5 && arena.getInternalTime() > 0) {
                 arena.broadcastMessage("arena.starting");
                 arena.broadcastSound(this.mainConfig.getSound("game-settings.sounds.arena-countdown", "NOTE_PLING"));
-            }
-
-            else if (arena.getInternalTime() == 0) {
+            } else if (arena.getInternalTime() == 0) {
                 this.handleArenaStart();
             }
-        }
-
-        else if (arena.getState() == ArenaState.EXPLAIN_GAME) {
+        } else if (arena.getState() == ArenaState.EXPLAIN_GAME) {
             if (arena.getInternalTime() == 0) {
                 this.arena.setState(ArenaState.IN_GAME);
                 this.arena.setInternalTime(this.arena.getCurrentGame().getGameTime());
                 this.arena.getCurrentGame().onStart();
             }
-        }
-
-        else if (arena.getState() == ArenaState.IN_GAME) {
+        } else if (arena.getState() == ArenaState.IN_GAME) {
             if (arena.getInternalTime() == 0) {
                 this.arena.setState(ArenaState.FINISHING_GAME);
                 this.arena.setInternalTime(this.mainConfig.getInt("game-settings.finishing-time", 5));
                 this.arena.getCurrentGame().onTimeUp();
             }
-        }
-
-        else if (arena.getState() == ArenaState.FINISHING_GAME) {
+            this.arena.getCurrentGame().computeWinners();
+        } else if (arena.getState() == ArenaState.FINISHING_GAME) {
             if (arena.getInternalTime() == 0) {
                 this.arena.nextGame();
             }
-        }
-
-        else if (arena.getState() == ArenaState.INTERMISSION) {
+        } else if (arena.getState() == ArenaState.INTERMISSION) {
             if (arena.getInternalTime() == 0) {
                 arena.setState(ArenaState.EXPLAIN_GAME);
                 arena.teleportAllPlayers(arena.getSpawnPosition());
                 arena.setInternalTime(15);
                 arena.getCurrentGame().onExplainStart();
             }
-        }
-
-        else if (arena.getState() == ArenaState.FINISHING_ARENA) {
+        } else if (arena.getState() == ArenaState.FINISHING_ARENA) {
             final SquidPlayer winner = this.arena.calculateWinner();
-            if (winner != null && this.mainConfig.getBoolean("game-settings.spawn-fireworks-on-win", true)) {
+            if (winner != null && this.mainConfig.getBoolean("game-settings.spawn-fireworks-on-win", true))
                 winner.spawnFirework(1, 1, Color.RED, true);
-            }
 
-            if (arena.getInternalTime() == 0) {
+            if (arena.getInternalTime() == 0)
                 arena.resetArena();
-            }
         }
     }
 
     public void handleArenaFinish(final ArenaFinishReason reason) {
         this.arena.setInternalTime(this.mainConfig.getInt("game-settings.finishing-time", 5));
 
+        // Give rewards
+        final List<String> rewardCommands = this.mainConfig.getStringList("game-settings.rewards",
+                new ArrayList<>());
+
         switch (reason) {
-        case ALL_PLAYERS_DEATH:
-            this.arena.broadcastTitle("events.finish.draw.title", "events.finish.draw.subtitle");
-            return;
-        case ONE_PLAYER_IN_ARENA:
-            this.arena.broadcastTitle("events.finish.winner.title", "events.finish.winner.subtitle");
+            case ALL_PLAYERS_DEATH:
+                this.arena.broadcastTitle("events.finish.draw.title", "events.finish.draw.subtitle");
+                return;
+            case ALL_PLAYERS_WON:
+                this.arena.broadcastTitle("events.finish.winner.title", "events.finish.winner.subtitle");
 
-            // Give rewards
-            final List<String> rewardCommands = this.mainConfig.getStringList("game-settings.rewards",
-                    new ArrayList<>());
+                for (String rewardCommand : rewardCommands) {
+                    for (SquidPlayer winner : arena.getCurrentGame().getWinners()) {
+                        Bukkit.dispatchCommand(
+                                Bukkit.getConsoleSender(),
+                                PlaceholderAPIHook.formatString(
+                                        rewardCommand.replace("{winner}", winner.getBukkitPlayer().getName()),
+                                        winner.getBukkitPlayer()
+                                )
+                        );
+                    }
+                }
 
-            for (final String reward : rewardCommands) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-                        reward.replace("{winner}", arena.calculateWinner().getBukkitPlayer().getName()));
-            }
+                break;
+            case ONE_PLAYER_IN_ARENA:
+                this.arena.broadcastTitle("events.finish.winner.title", "events.finish.winner.subtitle");
+                final SquidPlayer winner = arena.calculateWinner();
 
-            break;
-        case PLUGIN_STOP:
-            break;
+                for (final String rewardCommand : rewardCommands) {
+                    PlaceholderAPIHook.formatString(
+                            rewardCommand.replace("{winner}", winner.getBukkitPlayer().getName()),
+                            winner.getBukkitPlayer()
+                    );
+                }
+
+                break;
+            case PLUGIN_STOP:
+                break;
         }
     }
 }
