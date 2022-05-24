@@ -67,9 +67,8 @@ public class ArenaHandler {
             } else if (arena.getInternalTime() <= 5 && arena.getInternalTime() > 0) {
                 arena.broadcastMessage("arena.starting");
                 arena.broadcastSound(this.mainConfig.getSound("game-settings.sounds.arena-countdown", "NOTE_PLING"));
-            } else if (arena.getInternalTime() == 0) {
+            } else if (arena.getInternalTime() == 0)
                 this.handleArenaStart();
-            }
         } else if (arena.getState() == ArenaState.EXPLAIN_GAME) {
             if (arena.getInternalTime() == 0) {
                 this.arena.setState(ArenaState.IN_GAME);
@@ -82,11 +81,9 @@ public class ArenaHandler {
                 this.arena.setInternalTime(this.mainConfig.getInt("game-settings.finishing-time", 5));
                 this.arena.getCurrentGame().onTimeUp();
             }
-            this.arena.getCurrentGame().computeWinners();
         } else if (arena.getState() == ArenaState.FINISHING_GAME) {
-            if (arena.getInternalTime() == 0) {
+            if (arena.getInternalTime() == 0)
                 this.arena.nextGame();
-            }
         } else if (arena.getState() == ArenaState.INTERMISSION) {
             if (arena.getInternalTime() == 0) {
                 arena.setState(ArenaState.EXPLAIN_GAME);
@@ -118,8 +115,8 @@ public class ArenaHandler {
             case ALL_PLAYERS_WON:
                 this.arena.broadcastTitle("events.finish.winner.title", "events.finish.winner.subtitle");
 
-                for (String rewardCommand : rewardCommands) {
-                    for (SquidPlayer winner : arena.getCurrentGame().getWinners()) {
+                for (SquidPlayer winner : arena.getCurrentGame().getWinners()) {
+                    for (final String rewardCommand : rewardCommands) {
                         Bukkit.dispatchCommand(
                                 Bukkit.getConsoleSender(),
                                 PlaceholderAPIHook.formatString(

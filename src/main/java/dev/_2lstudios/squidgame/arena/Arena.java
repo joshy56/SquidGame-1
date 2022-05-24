@@ -34,11 +34,21 @@ public class Arena {
     private boolean allowPvP;
 
     public Arena(final World world, final String name, final Configuration arenaConfig) {
-        this.players = new ArrayList<>();
-        this.spectators = new ArrayList<>();
         this.games = new ArrayList<>();
 
         this.mainConfig = SquidGame.getInstance().getMainConfig();
+        this.players = new ArrayList<>(
+                Math.min(
+                        getMaxPlayers(),
+                        16
+                )
+        );
+        this.spectators = new ArrayList<>(
+                Math.min(
+                        getMaxPlayers(),
+                        16
+                )
+        );
         this.arenaConfig = arenaConfig;
         this.handler = new ArenaHandler(this);
         this.world = world;

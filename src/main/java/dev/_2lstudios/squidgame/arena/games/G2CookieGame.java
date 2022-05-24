@@ -39,7 +39,9 @@ public class G2CookieGame extends ArenaGameBase {
 
     public G2CookieGame(final Arena arena, int gameTime) {
         super("§6Honeycomb", "second", gameTime, arena);
-        players = new HashMap<>();
+        players = new HashMap<>(
+                this.getArena().getMaxPlayers()
+        );
     }
 
     @Nullable

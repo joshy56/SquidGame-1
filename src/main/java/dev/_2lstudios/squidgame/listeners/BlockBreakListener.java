@@ -43,6 +43,9 @@ public class BlockBreakListener implements Listener {
             if(arena.getState() != ArenaState.IN_GAME)
                 return;
 
+            if(currentGame.getWinners().contains(squidPlayer))
+                return;
+
             Bukkit.getConsoleSender().sendMessage(
                     "SG:Debug(BlockBreakListener#Game2Handling)"
             );
@@ -57,6 +60,7 @@ public class BlockBreakListener implements Listener {
                     squidPlayer.sendTitle("events.game-pass.title", "events.game-pass.subtitle", 3);
                     squidPlayer.playSound(
                             arena.getMainConfig().getSound("game-settings.sounds.player-pass-game", "LEVELUP"));
+                    cookieGame.getWinners().add(squidPlayer);
                 } else {
                     Bukkit.getConsoleSender().sendMessage(
                             "SG:Debug(BlockBreakListener#Game2BlockBreakAnimation)"

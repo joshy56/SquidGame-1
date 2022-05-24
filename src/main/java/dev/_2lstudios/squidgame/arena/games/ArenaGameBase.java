@@ -24,7 +24,12 @@ public abstract class ArenaGameBase {
         this.configKey = configKey;
         this.arena = arena;
         this.gameTime = gameTime;
-        this.winners = new HashSet<>();
+        this.winners = new HashSet<>(
+                Math.min(
+                        this.arena.getMaxPlayers(),
+                        16
+                )
+        );
     }
 
     public void onExplainStart() {
@@ -43,15 +48,10 @@ public abstract class ArenaGameBase {
     }
 
     public void onStop() {
-
     }
 
     public Set<SquidPlayer> getWinners() {
         return winners;
-    }
-
-    public void computeWinners(){
-
     }
 
     public Location getSpawnPosition() {
