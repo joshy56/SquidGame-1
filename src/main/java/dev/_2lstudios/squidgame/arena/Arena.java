@@ -358,10 +358,10 @@ public class Arena {
     }
 
     public void nextGame() {
-        if (this.calculateWinner() != null) {
+        /*if (this.calculateWinner() != null) {
             this.finishArena(ArenaFinishReason.ONE_PLAYER_IN_ARENA);
             return;
-        } else if (this.currentGame != null) {
+        } else */if (this.currentGame != null) {
             this.currentGame.onStop();
         }
 
