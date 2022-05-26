@@ -4,10 +4,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
+import com.google.common.math.IntMath;
 import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
+import dev._2lstudios.squidgame.player.SquidPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
@@ -17,15 +19,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Created by joshy23 (justJoshy23 - joshy56) on 29/3/2022.
@@ -141,6 +144,15 @@ public class G4RopePullingGame extends ArenaGameBase {
         return actualPointer.get();
     }
 
+    @Nullable
+    public Team getTeamOfPlayer(SquidPlayer player){
+        if(Team.BLUE.getPlayers().contains(player.getBukkitPlayer().getUniqueId()))
+            return Team.BLUE;
+        if(Team.RED.getPlayers().contains(player.getBukkitPlayer().getUniqueId()))
+            return Team.RED;
+        return null;
+    }
+
     public void dispenseTitleAnimation() {
         Bukkit.getScheduler().runTaskLater(
                 JavaPlugin.getPlugin(SquidGame.class),
@@ -207,7 +219,24 @@ public class G4RopePullingGame extends ArenaGameBase {
 
     @Override
     public void onStart() {
+        List<UUID> playersUuids = getArena()
+                .getPlayers()
+                .stream()
+                .map(squidPlayer -> squidPlayer.getBukkitPlayer().getUniqueId()).collect(Collectors.toList());
+        int partitionSize = IntMath.divide(playersUuids.size(), 2, RoundingMode.UP);
+        List<List<UUID>> teams = Lists.partition(playersUuids, partitionSize);
+        Team.BLUE.getPlayers().addAll(teams.get(0));
+        Team.RED.getPlayers().addAll(teams.get(1));
         dispenseTitleAnimation();
+    }
+
+    @Override
+    public void onTimeUp() {
+        Team.BLUE.reset();
+        Team.RED.reset();
+        actualPointer.set(
+                Pointer.empty()
+        );
     }
 
     public static final class Pointer {
@@ -254,6 +283,34 @@ public class G4RopePullingGame extends ArenaGameBase {
 
         public static Pointer empty() {
             return EMPTY;
+        }
+
+    }
+
+    public enum Team {
+        BLUE,
+        RED;
+
+        private final Set<UUID> players;
+        private final AtomicInteger points;
+        Team(){
+            players = Collections.synchronizedSet(
+                    new HashSet<>()
+            );
+            points = new AtomicInteger();
+        }
+
+        public Set<UUID> getPlayers() {
+            return players;
+        }
+
+        public AtomicInteger getPoints() {
+            return points;
+        }
+
+        public void reset(){
+            players.clear();
+            points.set(0);
         }
 
     }
