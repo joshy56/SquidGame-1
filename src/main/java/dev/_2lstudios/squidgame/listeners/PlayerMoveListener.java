@@ -57,17 +57,32 @@ public class PlayerMoveListener implements Listener {
                                 }
                         );
             } else if (arena.getState() == ArenaState.IN_GAME) {
-                if (!game.isCanWalk()) {
-                    final Vector3 playerPosition = new Vector3(e.getTo().getX(), e.getTo().getY(), e.getTo().getZ());
+                final Vector3 playerPosition = new Vector3(e.getTo().getX(), e.getTo().getY(), e.getTo().getZ());
+
+                if(game.getWinners().contains(player))
+                    return;
+
+                if (game.isCanWalk())
+                    Optional.ofNullable(game.getGoalZone())
+                            .filter(goalZone -> goalZone.isBetween(playerPosition))
+                            .ifPresent(goalZone -> game.getWinners().add(player));
+                else
                     Optional.ofNullable(game.getKillZone())
                             .filter(killZone -> killZone.isBetween(playerPosition))
                             .ifPresent(killZone -> arena.killPlayer(player));
-                }
             }
         }
 
         /* Game 6: Handling */
         else if (currentGame instanceof G6GlassesGame) {
+            if(arena.getState() != ArenaState.IN_GAME)
+                return;
+
+            if(currentGame.getWinners().contains(player))
+                return;
+            
+            final Vector3 playerPosition = new Vector3(e.getTo().getX(), e.getTo().getY(), e.getTo().getZ());
+
             final Location loc = e.getTo().clone().subtract(0, 1, 0);
             final Block block = loc.getBlock();
 

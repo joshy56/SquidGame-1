@@ -9,7 +9,7 @@
     <!-- Plugin Information -->
     <name>SquidGame</name>
     <description>This is just an example plugin</description>
-    <version>0.1.8-rev3</version>
+    <version>0.1.8-rev11</version>
     <url>https://twitter.com/sammwy</url>
 
     <properties>
@@ -88,7 +88,7 @@
     <!-- Build settings -->
     <build>
         <!-- Name of your compiled artifact -->
-        <finalName>${artifactId}-${version}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <!-- Directory of .java files -->
         <sourceDirectory>src/main/java</sourceDirectory>
         <!-- Clean old builds and install dependencies before compile -->

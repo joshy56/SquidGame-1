@@ -1,6 +1,7 @@
 package dev._2lstudios.squidgame.arena.games;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
 import dev._2lstudios.jelly.config.Configuration;
@@ -8,6 +9,9 @@ import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -15,7 +19,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,14 +61,21 @@ public class G4RopePullingGame extends ArenaGameBase {
                                 pointer.getVisualRepresentation(),
                                 Component.empty(),
                                 Title.Times.of(
-                                        Duration.ZERO, Duration.ofMillis(getTimeBetweenFrame()), Duration.ZERO
+                                        Duration.ZERO, getTimeBetweenFrame(), Duration.ZERO
                                 )
                         )
                 )
                 .reduce(
                         (left, right) -> Title.title(
-                                left.title().append(right.title()),
-                                left.subtitle().append(right.subtitle())
+                                TextComponent.ofChildren(
+                                        left.title(),
+                                        right.title()
+                                ),
+                                TextComponent.ofChildren(
+                                        left.subtitle(),
+                                        right.subtitle()
+                                ),
+                                left.times()
                         )
                 )
                 .orElse(
@@ -70,7 +83,7 @@ public class G4RopePullingGame extends ArenaGameBase {
                                 Component.text("¡¡Sin apuntadores!!"),
                                 Component.empty(),
                                 Title.Times.of(
-                                        Duration.ZERO, Duration.ofMillis(getTimeBetweenFrame()), Duration.ZERO
+                                        Duration.ZERO, getTimeBetweenFrame(), Duration.ZERO
                                 )
                         )
                 );
@@ -80,42 +93,48 @@ public class G4RopePullingGame extends ArenaGameBase {
         if (iterator == null) {
             //Take list of pointers from the config
             //Init iterator using iterator() method from the list get previously
+            Bukkit.getConsoleSender().sendMessage(
+                    "SG:Debug " + getClass().getSimpleName() + "#getPointers(Initializing iterator)"
+            );
             iterator = Lists.newArrayList(
                     new Pointer(
-                            Component.text('|'),
-                            Component.text('#'),
+                            Component.text('|', NamedTextColor.YELLOW),
+                            Component.text('#', NamedTextColor.YELLOW),
                             1
                     ),
                     new Pointer(
-                            Component.text('|'),
-                            Component.text('#'),
+                            Component.text('|', NamedTextColor.GOLD),
+                            Component.text('#', NamedTextColor.GOLD),
                             2
                     ),
                     new Pointer(
-                            Component.text('|'),
-                            Component.text('#'),
+                            Component.text('|', NamedTextColor.RED),
+                            Component.text('#', NamedTextColor.RED),
                             3
                     ),
                     new Pointer(
-                            Component.text('|'),
-                            Component.text('#'),
+                            Component.text('|', NamedTextColor.GOLD),
+                            Component.text('#', NamedTextColor.GOLD),
                             2
                     ),
                     new Pointer(
-                            Component.text('|'),
-                            Component.text('#'),
+                            Component.text('|', NamedTextColor.YELLOW),
+                            Component.text('#', NamedTextColor.YELLOW),
                             1
                     )
             ).listIterator();
+            Bukkit.getConsoleSender().sendMessage(
+                    "SG:Debug " + getClass().getSimpleName() + "#getPointers(Pointers{ " + iterator.toString() + " })"
+            );
         }
         return Lists.newArrayList(iterator);
     }
 
-    public int getTimeBetweenFrame() {
+    public Duration getTimeBetweenFrame() {
         if (timeBetweenFrame == null) {
-            timeBetweenFrame = 10;
+            timeBetweenFrame = 500;
         }
-        return timeBetweenFrame;
+        return Duration.ofMillis(timeBetweenFrame);
     }
 
     public final Pointer getActualPointer() {
@@ -129,15 +148,20 @@ public class G4RopePullingGame extends ArenaGameBase {
                     if (getArena().getState() == ArenaState.FINISHING_GAME)
                         return;
                     Pointer pointer = actualPointer.get();
+                    Title title = getTitle();
 
                     getArena().getPlayers().forEach(
-                            squidPlayer -> squidPlayer.getBukkitPlayer().showTitle(getTitle())
+                            squidPlayer -> squidPlayer.getBukkitPlayer().showTitle(title)
                     );
                     Bukkit.getConsoleSender().sendMessage(
-                            "SG:Debug G4RopePullingGame:dispensedTitle(" + getTitle().toString() + ")"
+                            "SG:Debug G4RopePullingGame#dispenseTitleAnimation(" + title.toString() + ")"
                     );
 
-                    iterator.set(pointer.hover(false));
+                    if(!(pointer.equals(Pointer.empty())))
+                        iterator.set(pointer.hover(false));
+                    Bukkit.getConsoleSender().sendMessage(
+                            "SG:Debug " + getClass().getSimpleName() + "#dispenseTitleAnimation(returning@" + returning + ")"
+                    );
                     returning = ((returning || !iterator.hasNext()) && iterator.hasPrevious());
                     pointer = (returning) ? iterator.previous() : iterator.next();
                     pointer.hover(true);
@@ -145,7 +169,7 @@ public class G4RopePullingGame extends ArenaGameBase {
                     actualPointer.set(pointer);
                     dispenseTitleAnimation();
                 },
-                getTimeBetweenFrame()
+                getTimeBetweenFrame().toMillis() / 50
         );
     }
 
@@ -156,7 +180,7 @@ public class G4RopePullingGame extends ArenaGameBase {
                         Title.title(
                                 right.getVisualRepresentation(),
                                 Component.empty(),
-                                Title.Times.of(Duration.ZERO, Duration.ofMillis(getTimeBetweenFrame()), Duration.ZERO)
+                                Title.Times.of(Duration.ZERO, getTimeBetweenFrame(), Duration.ZERO)
                         )
                 ),
                 (left, right) -> {
