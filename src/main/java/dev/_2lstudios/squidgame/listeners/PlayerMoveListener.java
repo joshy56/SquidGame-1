@@ -1,6 +1,7 @@
 package dev._2lstudios.squidgame.listeners;
 
 import dev._2lstudios.squidgame.arena.games.*;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -42,35 +43,8 @@ public class PlayerMoveListener implements Listener {
         ArenaGameBase currentGame = arena.getCurrentGame();
         /* Game 1: Handling */
         if (currentGame instanceof G1RedGreenLightGame) {
-            final G1RedGreenLightGame game = (G1RedGreenLightGame) currentGame;
-
-            if (arena.getState() == ArenaState.EXPLAIN_GAME) {
-                Optional.ofNullable(game.getBarrier())
-                        .filter(spawnZone -> !spawnZone.isBetween(e.getTo()))
-                        .ifPresent(
-                                spawnZone -> {
-                                    e.setCancelled(true);
-                                    if (spawnZone.isBetween(e.getFrom()))
-                                        e.setTo(e.getFrom());
-                                    else
-                                        e.setTo(game.getSpawnPosition());
-                                }
-                        );
-            } else if (arena.getState() == ArenaState.IN_GAME) {
-                final Vector3 playerPosition = new Vector3(e.getTo().getX(), e.getTo().getY(), e.getTo().getZ());
-
-                if(game.getWinners().contains(player))
-                    return;
-
-                if (game.isCanWalk())
-                    Optional.ofNullable(game.getGoalZone())
-                            .filter(goalZone -> goalZone.isBetween(playerPosition))
-                            .ifPresent(goalZone -> game.getWinners().add(player));
-                else
-                    Optional.ofNullable(game.getKillZone())
-                            .filter(killZone -> killZone.isBetween(playerPosition))
-                            .ifPresent(killZone -> arena.killPlayer(player));
-            }
+            new ArenaDispatchActionEvent<>(e, arena)
+                    .callEvent();
         }
 
         /* Game 6: Handling */

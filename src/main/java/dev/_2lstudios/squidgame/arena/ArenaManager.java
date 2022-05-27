@@ -82,13 +82,14 @@ public class ArenaManager {
     }
 
     public Arena getFirstAvailableArena() throws NoAvailableArenaException, ArenaMisconfiguredException {
-        for (final Arena arena : arenas) {
-            if (arena.getState() == ArenaState.WAITING || arena.getState() == ArenaState.STARTING) {
-                return arena;
-            }
-        }
-
-        throw new NoAvailableArenaException();
+        return arenas.stream()
+                .filter(
+                        arena -> arena.getState() == ArenaState.WAITING || arena.getState() == ArenaState.STARTING
+                )
+                .findAny()
+                .orElseThrow(
+                        NoAvailableArenaException::new
+                );
     }
 
     public List<Arena> getArenas() {

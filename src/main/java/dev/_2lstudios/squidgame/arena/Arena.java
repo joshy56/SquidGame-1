@@ -9,6 +9,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -376,4 +377,5 @@ public class Arena {
         this.setPvPAllowed(false);
         this.broadcastTitle("events.intermission.title", "events.intermission.subtitle");
     }
+
 }

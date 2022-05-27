@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
+import org.bukkit.event.Listener;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -68,9 +69,10 @@ public abstract class ArenaGameBase {
     }
 
     public void broadcastMessageAfterSeconds(int seconds, final String message) {
-        Bukkit.getScheduler().runTaskLater(SquidGame.getInstance(), () -> {
-            this.arena.broadcastMessage(message);
-        }, seconds * 20L);
+        Bukkit.getScheduler().runTaskLater(
+                SquidGame.getInstance(),
+                () -> this.arena.broadcastMessage(message),
+                seconds * 20L);
     }
 
     public int getGameTime() {
@@ -83,5 +85,10 @@ public abstract class ArenaGameBase {
 
     public String getName() {
         return this.name;
+    }
+
+    public abstract GameEventsListener getEventsListener();
+
+    public interface GameEventsListener extends Listener {
     }
 }

@@ -2,7 +2,11 @@ package dev._2lstudios.squidgame.arena.games;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import dev._2lstudios.squidgame.arena.ArenaState;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
+import dev._2lstudios.squidgame.events.PlayerGameWinEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -13,6 +17,10 @@ import dev._2lstudios.jelly.utils.NumberUtils;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.player.SquidPlayer;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +42,97 @@ public class G1RedGreenLightGame extends ArenaGameBase {
             .withAmbient(false)
             .withParticles(false)
             .withIcon(true);
+
+    private static final GameEventsListener LISTENER = new GameEventsListener() {
+
+        @EventHandler
+        public void onArenaDispatchEvent(ArenaDispatchActionEvent<?> event) {
+            Event action = event.getAction();
+            if (action instanceof PlayerGameWinEvent) {
+                PlayerGameWinEvent<?> specificAction = (PlayerGameWinEvent<?>) action;
+                if(specificAction.getGame() instanceof G1RedGreenLightGame)
+                    onPlayerWin((PlayerGameWinEvent<G1RedGreenLightGame>) specificAction);
+            }
+
+            if(action instanceof PlayerMoveEvent){
+                onPlayerMove((PlayerMoveEvent) action);
+            }
+        }
+
+        private void onPlayerWin(PlayerGameWinEvent<G1RedGreenLightGame> event) {
+            if (event.isCancelled())
+                return;
+
+            G1RedGreenLightGame game = event.getGame();
+            SquidPlayer player = event.getWinner();
+            Arena arena = player.getArena();
+            if(!game.getArena().equals(arena))
+                return;
+            if(!(arena.getCurrentGame() instanceof G1RedGreenLightGame))
+                return;
+
+            Location position = player.getBukkitPlayer().getLocation();
+            Optional.ofNullable(game.getGoalZone())
+                    .ifPresent(
+                            goalZone -> {
+                                if (goalZone.isBetween(position)) {
+                                    game.getWinners().add(player);
+
+                                    player.sendTitle("events.game-pass.title", "events.game-pass.subtitle", 3);
+                                    player.playSound(
+                                            arena.getMainConfig().getSound("game-settings.sounds.player-pass-game", "LEVELUP"));
+                                }
+                                else
+                                    event.setCancelled(true);
+                            }
+                    );
+        }
+
+        private void onPlayerMove(PlayerMoveEvent event){
+            final SquidPlayer player = (SquidPlayer) SquidGame.getInstance().getPlayerManager().getPlayer(event.getPlayer());
+            final Arena arena = player.getArena();
+
+            if (arena == null || player.isSpectator()) {
+                return;
+            }
+
+            ArenaGameBase currentGame = arena.getCurrentGame();
+            /* Game 1: Handling */
+            if (currentGame instanceof G1RedGreenLightGame) {
+                final G1RedGreenLightGame game = (G1RedGreenLightGame) currentGame;
+
+                if (arena.getState() == ArenaState.EXPLAIN_GAME) {
+                    Optional.ofNullable(game.getBarrier())
+                            .filter(spawnZone -> !spawnZone.isBetween(event.getTo()))
+                            .ifPresent(
+                                    spawnZone -> {
+                                        event.setCancelled(true);
+                                        if (spawnZone.isBetween(event.getFrom()))
+                                            event.setTo(event.getFrom());
+                                        else
+                                            event.setTo(game.getSpawnPosition());
+                                    }
+                            );
+                } else if (arena.getState() == ArenaState.IN_GAME) {
+                    final Vector3 playerPosition = new Vector3(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ());
+
+                    if(game.getWinners().contains(player))
+                        return;
+
+                    if (game.isCanWalk())
+                        Optional.ofNullable(game.getGoalZone())
+                                .filter(goalZone -> goalZone.isBetween(playerPosition))
+                                .ifPresent(
+                                        goalZone -> new PlayerGameWinEvent<>(game, player).callEvent()
+                                );
+                    else
+                        Optional.ofNullable(game.getKillZone())
+                                .filter(killZone -> killZone.isBetween(playerPosition))
+                                .ifPresent(killZone -> arena.killPlayer(player));
+                }
+            }
+        }
+    };
 
     public G1RedGreenLightGame(final Arena arena, final int durationTime) {
         super("§aGreen Light §7| §cRed Light", "first", durationTime, arena);
@@ -108,6 +207,11 @@ public class G1RedGreenLightGame extends ArenaGameBase {
     }
 
     @Override
+    public GameEventsListener getEventsListener() {
+        return LISTENER;
+    }
+
+    @Override
     public void onTimeUp() {
         this.getArena().setPvPAllowed(false);
         this.canWalk = false;
@@ -119,15 +223,13 @@ public class G1RedGreenLightGame extends ArenaGameBase {
         final List<SquidPlayer> alive = new ArrayList<>();
 
         for (final SquidPlayer squidPlayer : this.getArena().getPlayers()) {
-            final Player player = squidPlayer.getBukkitPlayer();
-            final Location location = player.getLocation();
-            final Vector3 position = new Vector3(location.getX(), location.getY(), location.getZ());
+            if (squidPlayer.isSpectator())
+                continue;
 
-            if (this.getGoalZone().isBetween(position)) {
+            if (this.getWinners().contains(squidPlayer))
                 alive.add(squidPlayer);
-            } else {
+            else
                 death.add(squidPlayer);
-            }
         }
 
         Bukkit.getScheduler().runTaskLater(SquidGame.getInstance(), () -> {
