@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
+import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 
 import java.util.HashSet;
@@ -19,6 +20,10 @@ public abstract class ArenaGameBase {
     private final Arena arena;
     private final int gameTime;
     private final Set<SquidPlayer> winners;
+
+    public abstract static class GameListener implements Listener {
+        public abstract <T extends Event> void onArenaHandleEvent(T event);
+    }
 
     public ArenaGameBase(final String name, final String configKey, final int gameTime, final Arena arena) {
         this.name = name;

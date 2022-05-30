@@ -43,7 +43,12 @@ public class G1RedGreenLightGame extends ArenaGameBase {
             .withParticles(false)
             .withIcon(true);
 
-    private static final GameEventsListener LISTENER = new GameEventsListener() {
+    public static final GameListener LISTENER = new GameListener() {
+
+        @Override
+        public <T extends Event> void onArenaHandleEvent(T event) {
+
+        }
 
         @EventHandler
         public void onArenaDispatchEvent(ArenaDispatchActionEvent<?> event) {
