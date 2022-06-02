@@ -3,6 +3,7 @@ package dev._2lstudios.squidgame.listeners;
 import dev._2lstudios.squidgame.arena.ArenaState;
 import dev._2lstudios.squidgame.arena.games.ArenaGameBase;
 import dev._2lstudios.squidgame.arena.games.G2CookieGame;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
@@ -40,36 +41,7 @@ public class BlockBreakListener implements Listener {
 
         /* Game 2: Handling*/
         if(currentGame instanceof G2CookieGame){
-            if(arena.getState() != ArenaState.IN_GAME)
-                return;
-
-            if(currentGame.getWinners().contains(squidPlayer))
-                return;
-
-            Bukkit.getConsoleSender().sendMessage(
-                    "SG:Debug(BlockBreakListener#Game2Handling)"
-            );
-
-            G2CookieGame cookieGame = (G2CookieGame) currentGame;
-            Map.Entry<G2CookieGame.Shape, Integer> shape = cookieGame.getShapeAndProgressOf(squidPlayer);
-
-            /* Chequear si el jugador ya rompio todos los bloques y marcarlo para la siguiente ronda */
-
-            if(shape.getKey().getPoints().contains(e.getBlock().getLocation().toVector().toBlockVector())) {
-                if(cookieGame.mineShapeAndCheckIfWin(squidPlayer)) {
-                    squidPlayer.sendTitle("events.game-pass.title", "events.game-pass.subtitle", 3);
-                    squidPlayer.playSound(
-                            arena.getMainConfig().getSound("game-settings.sounds.player-pass-game", "LEVELUP"));
-                    cookieGame.getWinners().add(squidPlayer);
-                } else {
-                    Bukkit.getConsoleSender().sendMessage(
-                            "SG:Debug(BlockBreakListener#Game2BlockBreakAnimation)"
-                    );
-                    bukkitPlayer.sendBlockChange(e.getBlock().getLocation(), Material.AIR.createBlockData());
-                }
-            }
-            else
-                arena.killPlayer(squidPlayer, true);
+            new ArenaDispatchActionEvent<>(e, arena, squidPlayer).callEvent();
         }
     }
 }

@@ -4,6 +4,7 @@ import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
 import dev._2lstudios.squidgame.arena.games.ArenaGameBase;
 import dev._2lstudios.squidgame.arena.games.G2CookieGame;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import fr.skytasul.guardianbeam.Laser;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -55,40 +56,7 @@ public class PlayerInteractListener implements Listener {
         ArenaGameBase currentGame = arena.getCurrentGame();
 
         /* Game 2: Handling */
-        if (currentGame instanceof G2CookieGame) {
-            if (arena.getState() != ArenaState.IN_GAME)
-                return;
-
-            Bukkit.getConsoleSender().sendMessage(
-                    "SG:Debug(PlayerInteractListener#Game2Handling)"
-            );
-
-            Optional.ofNullable(player.getBukkitPlayer().rayTraceBlocks(32))
-                    .map(RayTraceResult::getHitBlock)
-                    .ifPresent(
-                            block -> {
-                                Bukkit.getConsoleSender().sendMessage(
-                                        "SG:Debug(PlayerInteractListener#Game2BeamBlockHit)"
-                                );
-
-                                Bukkit.getPluginManager().callEvent(
-                                        new BlockBreakEvent(block, player.getBukkitPlayer())
-                                );
-                                /*try {;
-                                    Laser laser = new Laser.GuardianLaser(
-                                            player.getBukkitPlayer().getEyeLocation(),
-                                            block.getLocation(),
-                                            10,
-                                            0
-                                    );
-                                    laser.durationInTicks();
-                                    laser.start(this.plugin);
-                                } catch (ReflectiveOperationException ex) {
-                                    ex.printStackTrace();
-                                }*/
-                            }
-                    );
-
-        }
+        if (currentGame instanceof G2CookieGame)
+            new ArenaDispatchActionEvent<>(e, arena, player).callEvent();
     }
 }

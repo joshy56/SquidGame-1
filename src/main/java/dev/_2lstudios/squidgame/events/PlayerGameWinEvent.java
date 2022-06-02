@@ -1,5 +1,6 @@
 package dev._2lstudios.squidgame.events;
 
+import com.google.common.base.Preconditions;
 import dev._2lstudios.squidgame.arena.games.ArenaGameBase;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import org.bukkit.event.Cancellable;
@@ -21,10 +22,15 @@ public class PlayerGameWinEvent<Game extends ArenaGameBase> extends Event implem
         handlers = new HandlerList();
     }
 
-    public PlayerGameWinEvent(final Game game, final SquidPlayer winner) {
-        super(true);
-        this.game = game;
-        this.winner = winner;
+    public PlayerGameWinEvent(@NotNull final Game game, @NotNull final SquidPlayer winner) {
+        this.game = Preconditions.checkNotNull(
+                game,
+                "Game chosen is null..."
+        );
+        this.winner = Preconditions.checkNotNull(
+                winner,
+                "Winner chosen is null..."
+        );
     }
 
     @Override
@@ -32,7 +38,7 @@ public class PlayerGameWinEvent<Game extends ArenaGameBase> extends Event implem
         return handlers;
     }
 
-    public static HandlerList getHandlersList(){
+    public static HandlerList getHandlerList(){
         return handlers;
     }
 
@@ -46,10 +52,12 @@ public class PlayerGameWinEvent<Game extends ArenaGameBase> extends Event implem
         this.cancelled = cancelled;
     }
 
+    @NotNull
     public Game getGame() {
         return game;
     }
 
+    @NotNull
     public SquidPlayer getWinner() {
         return winner;
     }

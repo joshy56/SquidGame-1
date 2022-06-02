@@ -3,6 +3,9 @@ package dev._2lstudios.squidgame.arena.games;
 import java.util.ArrayList;
 import java.util.List;
 
+import dev._2lstudios.squidgame.arena.games.listeners.G6GlassesGameListener;
+import dev._2lstudios.squidgame.arena.games.listeners.GameListener;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,6 +19,7 @@ import dev._2lstudios.jelly.utils.BooleanUtils;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.player.SquidPlayer;
+import org.bukkit.event.Event;
 
 public class G6GlassesGame extends ArenaGameBase {
 
@@ -23,6 +27,11 @@ public class G6GlassesGame extends ArenaGameBase {
     private Cuboid goalZone;
 
     private final List<Block> fakeBlocks;
+    private static final GameListener LISTENER;
+
+    static {
+        LISTENER = new G6GlassesGameListener();
+    }
 
     public G6GlassesGame(final Arena arena, final int durationTime) {
         super("§bGlasses", "sixth", durationTime, arena);
@@ -198,5 +207,10 @@ public class G6GlassesGame extends ArenaGameBase {
                 this.getArena().killPlayer(squidPlayer);
             }
         }, 80L);
+    }
+
+    @Override
+    public GameListener getEventsListener() {
+        return LISTENER;
     }
 }

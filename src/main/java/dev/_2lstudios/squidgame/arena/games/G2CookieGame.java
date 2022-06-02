@@ -6,15 +6,27 @@ import dev._2lstudios.jelly.utils.NumberUtils;
 import dev._2lstudios.jelly.utils.ObjectUtils;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
+import dev._2lstudios.squidgame.arena.ArenaState;
+import dev._2lstudios.squidgame.arena.games.listeners.G2CookieGameListener;
+import dev._2lstudios.squidgame.arena.games.listeners.GameListener;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
+import dev._2lstudios.squidgame.events.PlayerGameWinEvent;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.BlockVector;
+import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,9 +44,12 @@ public class G2CookieGame extends ArenaGameBase {
     private EnumSet<Shape> shapes;
     private Material shapeLine;
     private Map<SquidPlayer, Map.Entry<Integer, AtomicInteger>> players;
+    private Integer searchDistance;
+    private static final GameListener LISTENER;
 
     static {
         ConfigurationSerialization.registerClass(Shape.class);
+        LISTENER = new G2CookieGameListener();
     }
 
     public G2CookieGame(final Arena arena, int gameTime) {
@@ -47,87 +62,55 @@ public class G2CookieGame extends ArenaGameBase {
     @Nullable
     public EnumSet<Shape> getShapes() {
         ConfigurationSection shapesSection = getArena().getConfig().getConfigurationSection("games.second.shapes");
-        if(shapes == null)
-        shapes = EnumSet.copyOf(
-                shapesSection.getValues(false)
-                .entrySet()
-                .stream()
-                .map(
-                        entry -> {
-                            try{
-                                Shape shape = Shape.valueOf(entry.getKey());
-                                Bukkit.getConsoleSender().sendMessage(
-                                        entry.getValue().toString()
-                                );
-                                Configuration values = new Configuration(
-                                        File.createTempFile("shapes", ".yml")
-                                );
-                                values.addDefaults(((ConfigurationSection) entry.getValue()).getValues(false));
-                                return new AbstractMap.SimpleEntry<>(shape, values);
-                            }catch (IllegalArgumentException | IOException e) {
-                                e.printStackTrace();
-                                return null;
-                            }
-                        }
-                )
-                .filter(Objects::nonNull)
-                .map(
-                        entry -> {
-                            Configuration shapeSection = entry.getValue();
-                            if(shapeSection.contains("spawn"))
-                                Bukkit.getConsoleSender().sendMessage(
-                                        "Shape( " + entry.getKey().name() + " )HasSpawn"
-                                );
-                            Location spawn = shapeSection.getLocation("spawn", false);
-                            spawn.setWorld(getArena().getWorld());
-                            List<BlockVector> points = (List<BlockVector>) shapeSection.getList("mine-points");
-                            return entry.getKey()
-                                    .setShootPoint(spawn)
-                                    .setPoints(points);
-                        }
-                )
-                .collect(Collectors.toSet())
-        );
-        /*if (shapes == null)
-            shapes = Optional.ofNullable(this.getArena().getConfig().getList("games.second.shapes"))*//* Get configuration section per shape*//*
-                    *//* Check if is a configuration section and extract data of shape and build it*//*
-                    .map(
-                            list -> list.stream()
-                                    .filter(ConfigurationSection.class::isInstance)
-                                    .map(ConfigurationSection.class::cast)
-                                    .map(
-                                            section -> {
-                                                Location spawn = section.getLocation("spawn");
-                                                List<BlockVector> points = Optional.ofNullable(section.getList("mine-points"))
-                                                        .map(
-                                                                l -> l.stream()
-                                                                        .filter(BlockVector.class::isInstance)
-                                                                        .map(BlockVector.class::cast)
-                                                                        .collect(Collectors.toList())
-                                                        )
-                                                        .orElseGet(ArrayList::new);
-                                                Bukkit.getConsoleSender().sendMessage(
-                                                        "SG:Debug#Game2(getShapes#shapeName{ " + section.getName() + " })"
-                                                );
-                                                Bukkit.getConsoleSender().sendMessage(
-                                                        "SG:Debug#Game2(getShapes#shapePointsSize{ " + points.size() + " })"
-                                                );
-                                                return Shape.valueOf(section.getName())
-                                                        .setShootPoint(spawn)
-                                                        .setPoints(points);
-                                            }
-                                    )
-                                    .collect(Collectors.toList())
-                    )
-                    .map(EnumSet::copyOf)
-                    .orElse(null);*/
+        if (shapes == null)
+            shapes = EnumSet.copyOf(
+                    shapesSection.getValues(false)
+                            .entrySet()
+                            .stream()
+                            .map(
+                                    entry -> {
+                                        try {
+                                            Shape shape = Shape.valueOf(entry.getKey());
+                                            Bukkit.getConsoleSender().sendMessage(
+                                                    entry.getValue().toString()
+                                            );
+                                            Configuration values = new Configuration(
+                                                    File.createTempFile("shapes", ".yml")
+                                            );
+                                            values.addDefaults(((ConfigurationSection) entry.getValue()).getValues(false));
+                                            return new AbstractMap.SimpleEntry<>(shape, values);
+                                        } catch (IllegalArgumentException | IOException e) {
+                                            e.printStackTrace();
+                                            return null;
+                                        }
+                                    }
+                            )
+                            .filter(Objects::nonNull)
+                            .map(
+                                    entry -> {
+                                        Configuration shapeSection = entry.getValue();
+                                        if (shapeSection.contains("spawn"))
+                                            Bukkit.getConsoleSender().sendMessage(
+                                                    "Shape( " + entry.getKey().name() + " )HasSpawn"
+                                            );
+                                        Location spawn = shapeSection.getLocation("spawn", false);
+                                        spawn.setWorld(getArena().getWorld());
+                                        List<BlockVector> points = (List<BlockVector>) shapeSection.getList("mine-points");
+                                        return entry.getKey()
+                                                .setShootPoint(spawn)
+                                                .setPoints(points);
+                                    }
+                            )
+                            .collect(Collectors.toSet())
+            );
         return shapes;
     }
 
     @Nullable
     public Material getShapeLine() {
         if (shapeLine == null)
-            shapeLine = Optional.ofNullable(this.getArena().getConfig().getString("games.second.shape.material-delimiter"))
+            shapeLine = Optional
+                    .ofNullable(this.getArena().getConfig().getString("games.second.shape.material-delimiter"))
                     .map(
                             name -> {
                                 try {
@@ -142,6 +125,26 @@ public class G2CookieGame extends ArenaGameBase {
         return shapeLine;
     }
 
+    public Integer getSearchDistance() {
+        if (searchDistance == null) {
+            searchDistance = Optional
+                    .ofNullable(
+                            getArena().getConfig().get("games.second.search-distance")
+                    )
+                    .filter(
+                            obj -> obj instanceof Number
+                    )
+                    .map(NumberConversions::toInt)
+                    .filter(
+                            integer -> integer >= 1
+                    )
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Value of 'games.second.search-distance' not found or is minus than 1.")
+                    );
+        }
+        return searchDistance;
+    }
+
     @Nullable
     public Map.Entry<Shape, Integer> getShapeAndProgressOf(SquidPlayer player) {
         if (players == null)
@@ -153,7 +156,7 @@ public class G2CookieGame extends ArenaGameBase {
                 .map(
                         s -> {
                             Map.Entry<Integer, AtomicInteger> stats = players.get(player);
-                            if(stats.getKey() <= s.length)
+                            if (stats.getKey() <= s.length)
                                 return new AbstractMap.SimpleEntry<>(s[stats.getKey()], stats.getValue().get());
                             return null;
                         }
@@ -194,7 +197,7 @@ public class G2CookieGame extends ArenaGameBase {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public boolean mineShapeAndCheckIfWin(SquidPlayer player){
+    public boolean mineShapeAndCheckIfWin(SquidPlayer player) {
         return Optional.ofNullable(getShapeAndProgressOf(player))
                 .map(
                         stats -> {
@@ -244,7 +247,7 @@ public class G2CookieGame extends ArenaGameBase {
 
         getArena().getPlayers().forEach(
                 squidPlayer -> {
-                    if(mineShapeAndCheckIfWin(squidPlayer))
+                    if (mineShapeAndCheckIfWin(squidPlayer))
                         alive.add(squidPlayer);
                     else
                         death.add(squidPlayer);
@@ -274,6 +277,11 @@ public class G2CookieGame extends ArenaGameBase {
 
         players.clear();
 
+    }
+
+    @Override
+    public GameListener getEventsListener() {
+        return LISTENER;
     }
 
     public enum Shape implements ConfigurationSerializable {

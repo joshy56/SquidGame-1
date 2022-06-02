@@ -9,6 +9,9 @@ import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
+import dev._2lstudios.squidgame.arena.games.listeners.G4RopePullingGameListener;
+import dev._2lstudios.squidgame.arena.games.listeners.GameListener;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentLike;
@@ -17,6 +20,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.event.Event;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +42,11 @@ public class G4RopePullingGame extends ArenaGameBase {
     private ListIterator<Pointer> iterator;
     private boolean returning;
     private Integer timeBetweenFrame;
+    private static final GameListener LISTENER;
+
+    static {
+        LISTENER = new G4RopePullingGameListener();
+    }
 
     public G4RopePullingGame(Arena arena, int gameTime) {
         super("§3Tug o' war", "four", gameTime, arena);
@@ -51,6 +60,11 @@ public class G4RopePullingGame extends ArenaGameBase {
         final Location location = config.getLocation("arena.waiting_room", false);
         location.setWorld(this.getArena().getWorld());
         return location;
+    }
+
+    @Override
+    public GameListener getEventsListener() {
+        return LISTENER;
     }
 
     public List<Title> getTitles() {

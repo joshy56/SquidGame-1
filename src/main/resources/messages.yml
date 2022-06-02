@@ -1,3 +1,15 @@
+prefix: "&7[&6S&eG&7]"
+
+commands:
+  spectate:
+    missed-argument:
+      arena-name: "%squidgame_prefix% &c¡Tienes que colocar el nombre de la arena!"
+    arena-not-found: "%squidgame_prefix% &fNo se encontro ninguna arena con ese nombre."
+  join:
+    no-available-arena: "%squidgame_prefix% &fNo se encontro ninguna arena disponible."
+  leave:
+    not-in-game: "%squidgame_prefix% &fNo estas en ningun juego."
+
 arena:
   join: "&a%squidgame_arena_joined% &ehas joined the game &b(%squidgame_arena_players%/%squidgame_arena_maxplayers%)"
   leave: "&c%squidgame_arena_leaved% &ehas left the game &b(%squidgame_arena_players%/%squidgame_arena_maxplayers%)"

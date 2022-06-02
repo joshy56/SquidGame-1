@@ -1,6 +1,9 @@
 package dev._2lstudios.squidgame.arena.games;
 
+import dev._2lstudios.squidgame.arena.games.listeners.GameListener;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import org.bukkit.Location;
+import org.bukkit.event.Event;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -23,6 +26,11 @@ public class G3BattleGame extends ArenaGameBase {
         final Location location = config.getLocation("arena.waiting_room", false);
         location.setWorld(this.getArena().getWorld());
         return location;
+    }
+
+    @Override
+    public GameListener getEventsListener() {
+        return null;
     }
 
     @Override

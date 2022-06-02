@@ -3,11 +3,13 @@ package dev._2lstudios.squidgame.hooks;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.player.SquidPlayer;
+import org.jetbrains.annotations.NotNull;
 
 public class PlaceholderAPIHook extends PlaceholderExpansion {
     private final SquidGame plugin;
@@ -82,7 +84,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
     }
 
     /* Handler */
-    public String onPlaceholderRequest(Player player, String identifier) {
+    public String onPlaceholderRequest(Player player, @NotNull String identifier) {
         if (player == null && (identifier.startsWith("player_") || identifier.startsWith("arena_"))) {
             return "";
         }
@@ -100,6 +102,12 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
             }
             return this.requestArenaPlaceholder(arena, identifier.split("_")[1]);
         }
+
+        if(identifier.equalsIgnoreCase("prefix"))
+            return ChatColor.translateAlternateColorCodes(
+                    '&',
+                    plugin.getMessagesConfig().getString("prefix", "")
+            );
 
         return null;
     }

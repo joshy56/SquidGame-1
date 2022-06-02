@@ -1,5 +1,7 @@
 package dev._2lstudios.squidgame.arena.games;
 
+import dev._2lstudios.squidgame.arena.games.listeners.GameListener;
+import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -8,7 +10,9 @@ import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,10 +24,6 @@ public abstract class ArenaGameBase {
     private final Arena arena;
     private final int gameTime;
     private final Set<SquidPlayer> winners;
-
-    public abstract static class GameListener implements Listener {
-        public abstract <T extends Event> void onArenaHandleEvent(T event);
-    }
 
     public ArenaGameBase(final String name, final String configKey, final int gameTime, final Arena arena) {
         this.name = name;
@@ -92,8 +92,7 @@ public abstract class ArenaGameBase {
         return this.name;
     }
 
-    public abstract GameEventsListener getEventsListener();
+    @Nullable
+    public abstract GameListener getEventsListener();
 
-    public interface GameEventsListener extends Listener {
-    }
 }

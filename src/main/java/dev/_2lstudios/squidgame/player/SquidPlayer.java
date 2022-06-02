@@ -8,12 +8,13 @@ import dev._2lstudios.jelly.player.PluginPlayer;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.hooks.PlaceholderAPIHook;
+import org.jetbrains.annotations.Nullable;
 
 public class SquidPlayer extends PluginPlayer {
 
     private Arena arena = null;
     private PlayerWand wand = null;
-    private boolean spectator = false;
+    private PlayerDataBackup backup;
 
     private final SquidGame plugin;
 
@@ -31,11 +32,32 @@ public class SquidPlayer extends PluginPlayer {
         return this.wand;
     }
 
-    public Arena getArena() {
-        return this.arena;
+    public SquidPlayer clearBackup(){
+        this.backup = PlayerDataBackupBuilder.empty().build();
+        return this;
     }
 
-    public void setArena(final Arena arena) {
+    public SquidPlayer restoreFromBackup(){
+        if(backup != null)
+            backup.apply(getBukkitPlayer());
+        return this;
+    }
+
+    public SquidPlayer resetBackup(){
+        this.backup = PlayerDataBackupBuilder.copyOf(getBukkitPlayer()).build();
+        return this;
+    }
+
+    @Nullable
+    public Arena getArena() {
+        if(arena == null)
+            return null;
+        if(!arena.getAllPlayers().contains(this))
+            setArena(null);
+        return arena;
+    }
+
+    public void setArena(@Nullable final Arena arena) {
         if (arena == null && this.arena != null) {
             this.arena.removePlayer(this);
             this.arena = null;
@@ -46,16 +68,10 @@ public class SquidPlayer extends PluginPlayer {
     }
 
     public boolean isSpectator() {
-        return this.spectator;
-    }
-
-    public void setSpectator(final boolean result) {
-        this.spectator = result;
-        if (result) {
-            this.getBukkitPlayer().setGameMode(GameMode.SPECTATOR);
-        } else {
-            this.getBukkitPlayer().setGameMode(GameMode.SURVIVAL);
-        }
+        Arena currentArena = getArena();
+        if(currentArena == null)
+            return false;
+        return currentArena.getSpectators().contains(this);
     }
 
     public void teleportToLobby() {

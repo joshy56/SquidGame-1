@@ -3,15 +3,18 @@ package dev._2lstudios.squidgame.arena;
 import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.games.*;
+import dev._2lstudios.squidgame.arena.games.listeners.GameListener;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import io.papermc.lib.PaperLib;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.event.Listener;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,16 +86,23 @@ public class Arena {
 
         if (game1Time > 0)
             this.games.add(new G1RedGreenLightGame(this, game1Time));
-        if(game2Time > 0)
+        if (game2Time > 0)
             this.games.add(new G2CookieGame(this, game2Time));
         if (game3Time > 0)
             this.games.add(new G3BattleGame(this, game3Time));
-        if(game4Time > 0)
+        if (game4Time > 0)
             this.games.add(new G4RopePullingGame(this, game4Time));
         if (game6Time > 0)
             this.games.add(new G6GlassesGame(this, game6Time));
         if (game7Time > 0)
             this.games.add(new G7SquidGame(this, game7Time));
+        games.forEach(
+                arenaGameBase -> {
+                    GameListener listener = arenaGameBase.getEventsListener();
+                    if (listener != null)
+                        SquidGame.getInstance().addEventListener(arenaGameBase.getEventsListener());
+                }
+        );
     }
 
     public Configuration getMainConfig() {
@@ -185,9 +195,25 @@ public class Arena {
                     player.getBukkitPlayer(),
                     this.getSpawnPosition()
             );
-            player.getBukkitPlayer().setFoodLevel(20);
-            player.getBukkitPlayer().setHealth(20);
+            Player bukkitPlayer = player.resetBackup().getBukkitPlayer();
+            bukkitPlayer.setGameMode(GameMode.SURVIVAL);
+            bukkitPlayer.setHealth(20);
+            bukkitPlayer.setFoodLevel(20);
+            bukkitPlayer.setExp(0);
+            bukkitPlayer.getActivePotionEffects().forEach(
+                    potionEffect -> bukkitPlayer.removePotionEffect(potionEffect.getType())
+            );
+            bukkitPlayer.getInventory().setContents(new ItemStack[0]);
+            bukkitPlayer.setAllowFlight(false);
+            bukkitPlayer.setFlying(false);
             player.setArena(this);
+            SquidGame plugin = SquidGame.getInstance();
+            getSpectators().forEach(
+                    spectator -> player.getBukkitPlayer().hidePlayer(
+                            plugin,
+                            spectator.getBukkitPlayer()
+                    )
+            );
             this.handler.handlePlayerJoin(player);
         }
 
@@ -221,9 +247,7 @@ public class Arena {
 
         if (this.isAllPlayersDeath()) {
             this.finishArena(ArenaFinishReason.ALL_PLAYERS_DEATH);
-        }
-
-        else if (this.calculateWinner() != null) {
+        } else if (this.calculateWinner() != null) {
             final boolean allowVictory = this.mainConfig
                     .getBoolean("game-settings.allow-victory-before-completing-game", false);
             final boolean isLastGame = this.currentGame != null && this.currentGame instanceof G7SquidGame;
@@ -240,12 +264,20 @@ public class Arena {
 
     public Arena addSpectator(final SquidPlayer player) {
         if (!this.spectators.contains(player)) {
-            if (this.players.contains(player)) {
-                this.players.remove(player);
-                this.spectators.add(player);
-                player.setSpectator(true);
-                player.setArena(this);
-            }
+            this.players.remove(player);
+            SquidGame plugin = SquidGame.getInstance();
+            getAllPlayers().forEach(
+                    p -> p.getBukkitPlayer().showPlayer(
+                            plugin,
+                            player.getBukkitPlayer()
+                    )
+            );
+            this.spectators.add(player);
+            player.resetBackup().setArena(this);
+            PaperLib.teleportAsync(
+                    player.getBukkitPlayer(),
+                    this.getSpawnPosition()
+            );
         }
 
         return this;
@@ -257,21 +289,41 @@ public class Arena {
             this.players.remove(player);
             this.handler.handlePlayerLeave(player);
 
+            SquidGame plugin = SquidGame.getInstance();
+            getSpectators().forEach(
+                    spectator -> player.getBukkitPlayer().showPlayer(
+                            plugin,
+                            spectator.getBukkitPlayer()
+                    )
+            );
+
             if (this.getState() != ArenaState.WAITING && this.getState() != ArenaState.STARTING
                     && this.getState() != ArenaState.FINISHING_ARENA) {
                 this.killPlayer(player);
             }
-        } else if (this.spectators.contains(player)) {
-            this.spectators.remove(player);
-            player.setSpectator(false);
-        } else {
+        } else
             return;
-        }
 
-        player.getBukkitPlayer().setGameMode(GameMode.SURVIVAL);
-        player.teleportToLobby();
+        player.restoreFromBackup().teleportToLobby();
         player.sendScoreboard("lobby");
         player.setArena(null);
+    }
+
+    public void removeSpectator(@NotNull final SquidPlayer player) {
+        if (spectators.contains(player)) {
+            players.remove(player);
+            spectators.remove(player);
+            SquidGame plugin = SquidGame.getInstance();
+            getAllPlayers().forEach(
+                    p -> p.getBukkitPlayer().showPlayer(
+                            plugin,
+                            player.getBukkitPlayer()
+                    )
+            );
+            player.setArena(null);
+            player.restoreFromBackup().teleportToLobby();
+            player.sendScoreboard("lobby");
+        }
     }
 
     public List<SquidPlayer> getAllPlayers() {
@@ -362,7 +414,8 @@ public class Arena {
         /*if (this.calculateWinner() != null) {
             this.finishArena(ArenaFinishReason.ONE_PLAYER_IN_ARENA);
             return;
-        } else */if (this.currentGame != null) {
+        } else */
+        if (this.currentGame != null) {
             this.currentGame.onStop();
         }
 

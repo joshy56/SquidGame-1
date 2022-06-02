@@ -2,6 +2,7 @@ package dev._2lstudios.squidgame;
 
 import java.util.logging.Level;
 
+import dev._2lstudios.squidgame.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginManager;
@@ -13,16 +14,6 @@ import dev._2lstudios.squidgame.arena.ArenaManager;
 import dev._2lstudios.squidgame.commands.SquidGameCommand;
 import dev._2lstudios.squidgame.hooks.PlaceholderAPIHook;
 import dev._2lstudios.squidgame.hooks.ScoreboardHook;
-import dev._2lstudios.squidgame.listeners.AsyncPlayerChatListener;
-import dev._2lstudios.squidgame.listeners.BlockBreakListener;
-import dev._2lstudios.squidgame.listeners.BlockPlaceListener;
-import dev._2lstudios.squidgame.listeners.EntityDamageListener;
-import dev._2lstudios.squidgame.listeners.FoodLevelChangeListener;
-import dev._2lstudios.squidgame.listeners.PlayerDeathListener;
-import dev._2lstudios.squidgame.listeners.PlayerInteractListener;
-import dev._2lstudios.squidgame.listeners.PlayerJoinListener;
-import dev._2lstudios.squidgame.listeners.PlayerMoveListener;
-import dev._2lstudios.squidgame.listeners.PlayerQuitListener;
 import dev._2lstudios.squidgame.player.PlayerManager;
 import dev._2lstudios.squidgame.tasks.ArenaTickTask;
 
@@ -66,6 +57,7 @@ public class SquidGame extends JellyPlugin {
         this.addEventListener(new FoodLevelChangeListener(this));
         this.addEventListener(new PlayerDeathListener(this));
         this.addEventListener(new PlayerInteractListener(this));
+        this.addEventListener(new PlayerGameWinListener(this));
         this.addEventListener(new PlayerJoinListener(this, scoreboardHook));
         this.addEventListener(new PlayerMoveListener(this));
         this.addEventListener(new PlayerQuitListener(this));

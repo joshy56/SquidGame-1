@@ -2,6 +2,7 @@ package dev._2lstudios.squidgame.listeners;
 
 import dev._2lstudios.squidgame.arena.games.*;
 import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
+import dev._2lstudios.squidgame.events.PlayerGameWinEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -36,16 +37,17 @@ public class PlayerMoveListener implements Listener {
         final SquidPlayer player = (SquidPlayer) this.plugin.getPlayerManager().getPlayer(e.getPlayer());
         final Arena arena = player.getArena();
 
-        if (arena == null || player.isSpectator()) {
+        if (arena == null || player.isSpectator())
             return;
-        }
 
         ArenaGameBase currentGame = arena.getCurrentGame();
         /* Game 1: Handling */
-        if (currentGame instanceof G1RedGreenLightGame) {
-            new ArenaDispatchActionEvent<>(e, arena)
-                    .callEvent();
-        }
+        if (currentGame instanceof G1RedGreenLightGame)
+            new ArenaDispatchActionEvent<>(
+                    e,
+                    arena,
+                    player
+            ).callEvent();
 
         /* Game 6: Handling */
         else if (currentGame instanceof G6GlassesGame) {
@@ -75,7 +77,15 @@ public class PlayerMoveListener implements Listener {
         else if (currentGame instanceof G7SquidGame) {
             final Location loc = e.getTo().clone();
             final String killBlock = arena.getConfig().getString("games.seventh.kill-block", "sand");
-
+            Material block;
+            try {
+                block = Material.valueOf(
+                        arena.getConfig().getString("games.seventh.kill-block", Material.SAND.getTranslationKey())
+                );
+            }catch (IllegalArgumentException ignore){
+                //ignore
+                block = Material.SAND;
+            }
             loc.subtract(0, 1, 0);
 
             if (loc.getBlock() != null && loc.getBlock().getType() != null

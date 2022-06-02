@@ -10,6 +10,7 @@ import dev._2lstudios.squidgame.commands.admin.SquidEditArenaCommand;
 import dev._2lstudios.squidgame.commands.admin.SquidWandCommand;
 import dev._2lstudios.squidgame.commands.game.SquidJoinCommand;
 import dev._2lstudios.squidgame.commands.game.SquidLeaveCommand;
+import dev._2lstudios.squidgame.commands.game.SquidSpectatorJoinCommand;
 import dev._2lstudios.squidgame.commands.game.SquidStartCommand;
 
 @Command(name = "squidgame")
@@ -25,6 +26,7 @@ public class SquidGameCommand extends CommandListener {
         this.addSubcommand(new SquidLeaveCommand());
         this.addSubcommand(new SquidJoinCommand());
         this.addSubcommand(new SquidStartCommand());
+        this.addSubcommand(new SquidSpectatorJoinCommand());
     }
 
     @Override

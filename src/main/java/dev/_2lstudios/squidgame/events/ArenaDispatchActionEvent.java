@@ -2,9 +2,11 @@ package dev._2lstudios.squidgame.events;
 
 import com.google.common.base.Preconditions;
 import dev._2lstudios.squidgame.arena.Arena;
+import dev._2lstudios.squidgame.player.SquidPlayer;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -20,22 +22,20 @@ public class ArenaDispatchActionEvent<Action extends Event> extends Event {
 
     private final Action action;
     private final Arena arena;
+    private final SquidPlayer player;
 
-    public ArenaDispatchActionEvent(final @NotNull Action action, final @NotNull Arena arena) {
-        super(true);
-        Preconditions.checkArgument(
-                Objects.isNull(action),
-                "Action chosen is null..."
-        );
-        Preconditions.checkArgument(
-                action instanceof ArenaDispatchActionEvent,
-                "Action chosen is instance of " + getClass().getSimpleName()
-        );
+    public ArenaDispatchActionEvent(final @NotNull Action action, final @NotNull Arena arena, @Nullable SquidPlayer player) {
+        if(Objects.isNull(action))
+            throw new IllegalArgumentException("Action chosen is null...");
+        if(action instanceof ArenaDispatchActionEvent)
+            throw new IllegalArgumentException("Action chosen is instance of " + getClass().getSimpleName() + " possible cyclic error.");
+
         this.action = action;
         this.arena = Preconditions.checkNotNull(
                 arena,
                 "Arena chosen is null..."
         );
+        this.player = player;
     }
 
     @Override
@@ -43,15 +43,22 @@ public class ArenaDispatchActionEvent<Action extends Event> extends Event {
         return HANDLERS;
     }
 
-    public static @NotNull HandlerList getHandlersList(){
+    public static @NotNull HandlerList getHandlerList(){
         return HANDLERS;
     }
 
+    @NotNull
     public Action getAction() {
         return action;
     }
 
+    @NotNull
     public Arena getArena() {
         return arena;
+    }
+
+    @Nullable
+    public SquidPlayer getPlayer() {
+        return player;
     }
 }
