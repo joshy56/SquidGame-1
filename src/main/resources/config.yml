@@ -8,6 +8,8 @@ game-settings:
   max-players: 12
   starting-time: 30
   finishing-time: 5
+  game-4:
+    title-update-delay: 150
   game-time:
     "1": 60
     "2": 60

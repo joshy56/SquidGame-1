@@ -16,6 +16,7 @@ import dev._2lstudios.squidgame.hooks.PlaceholderAPIHook;
 import dev._2lstudios.squidgame.hooks.ScoreboardHook;
 import dev._2lstudios.squidgame.player.PlayerManager;
 import dev._2lstudios.squidgame.tasks.ArenaTickTask;
+import org.jetbrains.annotations.Nullable;
 
 public class SquidGame extends JellyPlugin {
 
@@ -50,7 +51,8 @@ public class SquidGame extends JellyPlugin {
         this.addCommand(new SquidGameCommand());
 
         // Register listeners
-        this.addEventListener(new AsyncPlayerChatListener(this));
+        /*this.addEventListener(new AsyncPlayerChatListener(this));*/
+        this.addEventListener(new AsyncChatListener());
         this.addEventListener(new BlockBreakListener(this));
         this.addEventListener(new BlockPlaceListener(this));
         this.addEventListener(new EntityDamageListener(this));
@@ -120,6 +122,7 @@ public class SquidGame extends JellyPlugin {
     /* Static instance */
     private static SquidGame instance;
 
+    @Nullable
     public static SquidGame getInstance() {
         return instance;
     }

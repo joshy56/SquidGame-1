@@ -20,6 +20,7 @@ import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import org.bukkit.event.Event;
+import org.bukkit.util.Vector;
 
 public class G6GlassesGame extends ArenaGameBase {
 
@@ -62,20 +63,23 @@ public class G6GlassesGame extends ArenaGameBase {
     private void generateTiles(final Material material) {
         final World world = this.getArena().getWorld();
 
-        final Vector3 first = this.getGlassZone().getFirstPoint();
-        final Vector3 second = this.getGlassZone().getSecondPoint();
+        Vector firstPoint = getGlassZone().getFirstPoint().toLocation(world).toVector(),
+                secondPoint = getGlassZone().getSecondPoint().toLocation(world).toVector();
+        final Vector maximum = Vector.getMaximum(firstPoint,secondPoint);
+        final Vector minimum = Vector.getMinimum(firstPoint,secondPoint);
 
-        world.getBlockAt(first.toLocation(world)).setType(Material.GLASS);
-        world.getBlockAt(second.toLocation(world)).setType(Material.GLASS);
+
+        world.getBlockAt(maximum.toLocation(world)).setType(Material.GLASS);
+        world.getBlockAt(minimum.toLocation(world)).setType(Material.GLASS);
 
         // Obtener diferencia entre puntos X
-        final int differenceBetweenX = (int) Math.abs(first.getX() - second.getX());
+        final int differenceBetweenX = (int) Math.abs(maximum.getX() - minimum.getX());
         // Obtener diferencia entre puntos Z
-        final int differenceBetweenZ = (int) Math.abs(first.getZ() - second.getZ());
+        final int differenceBetweenZ = (int) Math.abs(maximum.getZ() - minimum.getZ());
         // Verificar si se debe usar el Z como un indice
         final boolean useZAsIndex = differenceBetweenZ > differenceBetweenX;
         // Verificar si se debe aumentar o restar el valor indice
-        final boolean shouldIncreaseIndex = useZAsIndex ? first.getZ() < second.getZ() : first.getX() < second.getX();
+        final boolean shouldIncreaseIndex = useZAsIndex ? maximum.getZ() < minimum.getZ() : maximum.getX() < minimum.getX();
 
         // Obtener el width del suelo dependiendo hacia donde esté señalando el area
         final int groundWidth = (useZAsIndex ? differenceBetweenX : differenceBetweenZ) + 1;
@@ -89,14 +93,14 @@ public class G6GlassesGame extends ArenaGameBase {
 
         // Indice de bloque (Incrementa o decrementa relativamente a la dirección de
         // generación)
-        int blockIndex = (int) (useZAsIndex ? first.getZ() : first.getX());
+        int blockIndex = (int) (useZAsIndex ? maximum.getZ() : maximum.getX());
 
         // Inicio del X, valor inmutable y absoluto.
-        final int xStart = Math.min((int) first.getX(), (int) second.getX());
+        final int xStart = Math.min((int) maximum.getX(), (int) minimum.getX());
         // Inicio del Y, valor inmutable y absoluto
-        final int yStart = (int) first.getY();
+        final int yStart = (int) maximum.getY();
         // Inicio del Z, valor inmutable y absoluto.
-        final int zStart = Math.max((int) first.getZ(), (int) second.getZ());
+        final int zStart = Math.max((int) maximum.getZ(), (int) minimum.getZ());
 
         // Obtener el número de pares de plataformas a generar dependiendo el tamaño
         final int platformGroups = groundHeight / (spaceZBetweenPlatforms + size);

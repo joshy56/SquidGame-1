@@ -1,9 +1,7 @@
 package dev._2lstudios.squidgame.arena.games;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
 import com.google.common.math.IntMath;
 import dev._2lstudios.jelly.config.Configuration;
 import dev._2lstudios.squidgame.SquidGame;
@@ -11,23 +9,20 @@ import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
 import dev._2lstudios.squidgame.arena.games.listeners.G4RopePullingGameListener;
 import dev._2lstudios.squidgame.arena.games.listeners.GameListener;
-import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import dev._2lstudios.squidgame.player.SquidPlayer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentLike;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.event.Event;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,7 +34,8 @@ import java.util.stream.Collectors;
  */
 public class G4RopePullingGame extends ArenaGameBase {
     private final AtomicReference<Pointer> actualPointer;
-    private ListIterator<Pointer> iterator;
+    private List<Pointer> pointers;
+    private AtomicInteger counter;
     private boolean returning;
     private Integer timeBetweenFrame;
     private static final GameListener LISTENER;
@@ -52,6 +48,7 @@ public class G4RopePullingGame extends ArenaGameBase {
         super("§3Tug o' war", "four", gameTime, arena);
         getPointers();
         actualPointer = new AtomicReference<>(Pointer.empty());
+        counter = new AtomicInteger();
     }
 
     @Override
@@ -67,89 +64,99 @@ public class G4RopePullingGame extends ArenaGameBase {
         return LISTENER;
     }
 
-    public List<Title> getTitles() {
-        return getPointers().stream().collect(asTitles());
-    }
-
     public Title getTitle() {
-        return getPointers().stream()
-                .map(
-                        pointer -> Title.title(
-                                pointer.getVisualRepresentation(),
-                                Component.empty(),
-                                Title.Times.of(
-                                        Duration.ZERO, getTimeBetweenFrame(), Duration.ZERO
-                                )
-                        )
+        Component title = getPointers()
+                .stream()
+                .map(Pointer::getRepresentation)
+                .collect(Component.toComponent());
+        Component subtitle = getPointers()
+                .stream()
+                .map(pointer -> Component.text(pointer.getWeight(), (pointer.isHovered()) ? pointer.getRepresentation().style().decorate(TextDecoration.BOLD) : pointer.getRepresentation().style()))
+                .collect(Component.toComponent());
+        return Title.title(
+                title,
+                subtitle,
+                Title.Times.of(
+                        Duration.ZERO, getTimeBetweenFrame().plusMillis(50), Duration.ZERO
                 )
-                .reduce(
-                        (left, right) -> Title.title(
-                                TextComponent.ofChildren(
-                                        left.title(),
-                                        right.title()
-                                ),
-                                TextComponent.ofChildren(
-                                        left.subtitle(),
-                                        right.subtitle()
-                                ),
-                                left.times()
-                        )
-                )
-                .orElse(
-                        Title.title(
-                                Component.text("¡¡Sin apuntadores!!"),
-                                Component.empty(),
-                                Title.Times.of(
-                                        Duration.ZERO, getTimeBetweenFrame(), Duration.ZERO
-                                )
-                        )
-                );
+        );
     }
 
     public List<Pointer> getPointers() {
-        if (iterator == null) {
+        if (pointers == null) {
             //Take list of pointers from the config
             //Init iterator using iterator() method from the list get previously
-            Bukkit.getConsoleSender().sendMessage(
-                    "SG:Debug " + getClass().getSimpleName() + "#getPointers(Initializing iterator)"
-            );
-            iterator = Lists.newArrayList(
+            pointers = Lists.newArrayList(
                     new Pointer(
                             Component.text('|', NamedTextColor.YELLOW),
-                            Component.text('#', NamedTextColor.YELLOW),
+                            Component.text('|', Style.style(NamedTextColor.YELLOW, TextDecoration.BOLD)),
+                            1
+                    ),
+                    new Pointer(
+                            Component.text('|', NamedTextColor.YELLOW),
+                            Component.text('|', Style.style(NamedTextColor.YELLOW, TextDecoration.BOLD)),
                             1
                     ),
                     new Pointer(
                             Component.text('|', NamedTextColor.GOLD),
-                            Component.text('#', NamedTextColor.GOLD),
+                            Component.text('|', Style.style(NamedTextColor.GOLD, TextDecoration.BOLD)),
                             2
                     ),
                     new Pointer(
                             Component.text('|', NamedTextColor.RED),
-                            Component.text('#', NamedTextColor.RED),
+                            Component.text('|', Style.style(NamedTextColor.RED, TextDecoration.BOLD)),
                             3
                     ),
                     new Pointer(
                             Component.text('|', NamedTextColor.GOLD),
-                            Component.text('#', NamedTextColor.GOLD),
+                            Component.text('|', Style.style(NamedTextColor.GOLD, TextDecoration.BOLD)),
                             2
                     ),
                     new Pointer(
                             Component.text('|', NamedTextColor.YELLOW),
-                            Component.text('#', NamedTextColor.YELLOW),
+                            Component.text('|', Style.style(NamedTextColor.YELLOW, TextDecoration.BOLD)),
+                            1
+                    ),
+                    new Pointer(
+                            Component.text('|', NamedTextColor.GOLD),
+                            Component.text('|', Style.style(NamedTextColor.GOLD, TextDecoration.BOLD)),
+                            2
+                    ),
+                    new Pointer(
+                            Component.text('|', NamedTextColor.RED),
+                            Component.text('|', Style.style(NamedTextColor.RED, TextDecoration.BOLD)),
+                            3
+                    ),
+                    new Pointer(
+                            Component.text('|', NamedTextColor.GOLD),
+                            Component.text('|', Style.style(NamedTextColor.GOLD, TextDecoration.BOLD)),
+                            2
+                    ),
+                    new Pointer(
+                            Component.text('|', NamedTextColor.YELLOW),
+                            Component.text('|', Style.style(NamedTextColor.YELLOW, TextDecoration.BOLD)),
+                            1
+                    ),
+                    new Pointer(
+                            Component.text('|', NamedTextColor.YELLOW),
+                            Component.text('|', Style.style(NamedTextColor.YELLOW, TextDecoration.BOLD)),
                             1
                     )
-            ).listIterator();
-            Bukkit.getConsoleSender().sendMessage(
-                    "SG:Debug " + getClass().getSimpleName() + "#getPointers(Pointers{ " + iterator.toString() + " })"
             );
         }
-        return Lists.newArrayList(iterator);
+        return pointers;
     }
 
     public Duration getTimeBetweenFrame() {
         if (timeBetweenFrame == null) {
-            timeBetweenFrame = 500;
+            timeBetweenFrame = Optional.ofNullable(SquidGame.getInstance())
+                    .map(
+                            plugin -> Math.max(
+                                    plugin.getMainConfig().getInt("game-settings.game-4.title-update-delay", 50),
+                                    50
+                            )
+                    )
+                    .orElse(50);
         }
         return Duration.ofMillis(timeBetweenFrame);
     }
@@ -159,10 +166,10 @@ public class G4RopePullingGame extends ArenaGameBase {
     }
 
     @Nullable
-    public Team getTeamOfPlayer(SquidPlayer player){
-        if(Team.BLUE.getPlayers().contains(player.getBukkitPlayer().getUniqueId()))
+    public Team getTeamOfPlayer(SquidPlayer player) {
+        if (Team.BLUE.getPlayers().contains(player.getBukkitPlayer().getUniqueId()))
             return Team.BLUE;
-        if(Team.RED.getPlayers().contains(player.getBukkitPlayer().getUniqueId()))
+        if (Team.RED.getPlayers().contains(player.getBukkitPlayer().getUniqueId()))
             return Team.RED;
         return null;
     }
@@ -179,55 +186,25 @@ public class G4RopePullingGame extends ArenaGameBase {
                     getArena().getPlayers().forEach(
                             squidPlayer -> squidPlayer.getBukkitPlayer().showTitle(title)
                     );
-                    Bukkit.getConsoleSender().sendMessage(
-                            "SG:Debug G4RopePullingGame#dispenseTitleAnimation(" + title.toString() + ")"
+                    pointer = pointers.get(counter.get());
+                    pointers.set(
+                            counter.getAndUpdate(
+                                    operand -> {
+                                        if (operand == pointers.size() - 1)
+                                            returning = true;
+                                        if (operand == 0)
+                                            returning = false;
+                                        return (returning) ? --operand : ++operand;
+                                    }
+                            ),
+                            pointer.hover(false)
                     );
-
-                    if(!(pointer.equals(Pointer.empty())))
-                        iterator.set(pointer.hover(false));
-                    Bukkit.getConsoleSender().sendMessage(
-                            "SG:Debug " + getClass().getSimpleName() + "#dispenseTitleAnimation(returning@" + returning + ")"
-                    );
-                    returning = ((returning || !iterator.hasNext()) && iterator.hasPrevious());
-                    pointer = (returning) ? iterator.previous() : iterator.next();
-                    pointer.hover(true);
-                    iterator.set(pointer);
+                    pointer = pointers.get(counter.get());
+                    pointers.set(counter.get(), pointer.hover(true));
                     actualPointer.set(pointer);
                     dispenseTitleAnimation();
                 },
                 getTimeBetweenFrame().toMillis() / 50
-        );
-    }
-
-    private Collector<Pointer, ?, List<Title>> asTitles() {
-        return Collector.of(
-                ArrayList::new,
-                (left, right) -> left.add(
-                        Title.title(
-                                right.getVisualRepresentation(),
-                                Component.empty(),
-                                Title.Times.of(Duration.ZERO, getTimeBetweenFrame(), Duration.ZERO)
-                        )
-                ),
-                (left, right) -> {
-                    left.addAll(right);
-                    return right;
-                }
-        );
-    }
-
-    private Collector<Pointer, ?, Title> asTitle() {
-        return Collector.of(
-                () -> {
-                    return null;
-                },
-                (left, right) -> {
-
-                },
-                (left, right) -> {
-
-                    return left;
-                }
         );
     }
 
@@ -238,9 +215,11 @@ public class G4RopePullingGame extends ArenaGameBase {
                 .stream()
                 .map(squidPlayer -> squidPlayer.getBukkitPlayer().getUniqueId()).collect(Collectors.toList());
         int partitionSize = IntMath.divide(playersUuids.size(), 2, RoundingMode.UP);
-        List<List<UUID>> teams = Lists.partition(playersUuids, partitionSize);
-        Team.BLUE.getPlayers().addAll(teams.get(0));
-        Team.RED.getPlayers().addAll(teams.get(1));
+        if (partitionSize == 2) {
+            List<List<UUID>> teams = Lists.partition(playersUuids, partitionSize);
+            Team.BLUE.getPlayers().addAll(teams.get(0));
+            Team.RED.getPlayers().addAll(teams.get(1));
+        }
         dispenseTitleAnimation();
     }
 
@@ -291,6 +270,10 @@ public class G4RopePullingGame extends ArenaGameBase {
             return this;
         }
 
+        public boolean isHovered() {
+            return hovered;
+        }
+
         public Integer getWeight() {
             return weight;
         }
@@ -299,6 +282,10 @@ public class G4RopePullingGame extends ArenaGameBase {
             return EMPTY;
         }
 
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + "{weight=" + getWeight() + ", hovered=" + isHovered() + ", representation=" + getVisualRepresentation().toString() + ", hoverRepresentation=" + getHoverRepresentation().toString() + "}";
+        }
     }
 
     public enum Team {
@@ -307,7 +294,8 @@ public class G4RopePullingGame extends ArenaGameBase {
 
         private final Set<UUID> players;
         private final AtomicInteger points;
-        Team(){
+
+        Team() {
             players = Collections.synchronizedSet(
                     new HashSet<>()
             );
@@ -322,7 +310,7 @@ public class G4RopePullingGame extends ArenaGameBase {
             return points;
         }
 
-        public void reset(){
+        public void reset() {
             players.clear();
             points.set(0);
         }

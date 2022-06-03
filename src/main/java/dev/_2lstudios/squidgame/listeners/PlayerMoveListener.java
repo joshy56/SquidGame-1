@@ -51,26 +51,11 @@ public class PlayerMoveListener implements Listener {
 
         /* Game 6: Handling */
         else if (currentGame instanceof G6GlassesGame) {
-            if(arena.getState() != ArenaState.IN_GAME)
-                return;
-
-            if(currentGame.getWinners().contains(player))
-                return;
-            
-            final Vector3 playerPosition = new Vector3(e.getTo().getX(), e.getTo().getY(), e.getTo().getZ());
-
-            final Location loc = e.getTo().clone().subtract(0, 1, 0);
-            final Block block = loc.getBlock();
-
-            if (block != null && block.getType() == Material.GLASS) {
-                final G6GlassesGame game = (G6GlassesGame) currentGame;
-
-                if (game.isFakeBlock(loc.getBlock())) {
-                    BlockUtils.destroyBlockGroup(loc.getBlock());
-                    arena.broadcastSound(
-                            this.plugin.getMainConfig().getSound("game-settings.sounds.glass-break", "GLASS"));
-                }
-            }
+            new ArenaDispatchActionEvent<>(
+                    e,
+                    arena,
+                    player
+            ).callEvent();
         }
 
         /* Game 7: Handling */

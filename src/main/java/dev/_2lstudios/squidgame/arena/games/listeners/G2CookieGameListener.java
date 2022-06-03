@@ -8,6 +8,7 @@ import dev._2lstudios.squidgame.arena.games.G2CookieGame;
 import dev._2lstudios.squidgame.events.ArenaDispatchActionEvent;
 import dev._2lstudios.squidgame.events.PlayerGameWinEvent;
 import dev._2lstudios.squidgame.player.SquidPlayer;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
@@ -15,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +24,7 @@ import java.util.Optional;
 /**
  * Created by joshy23 (justJoshy23 - joshy56) on 2/6/2022.
  */
-public class G2CookieGameListener extends GameListener {
+public final class G2CookieGameListener extends GameListener {
     @Override
     @EventHandler
     public <T extends Event> void onArenaHandleEvent(ArenaDispatchActionEvent<T> event) {
@@ -128,5 +130,9 @@ public class G2CookieGameListener extends GameListener {
                     Material.AIR.createBlockData()
             );
         else arena.killPlayer(player, true);
+    }
+
+    private void traceShoot(@NotNull final Location origin, @NotNull final Location end){
+        
     }
 }

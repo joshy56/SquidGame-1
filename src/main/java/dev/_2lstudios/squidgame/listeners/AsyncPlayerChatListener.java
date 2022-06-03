@@ -1,7 +1,15 @@
 package dev._2lstudios.squidgame.listeners;
 
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import dev._2lstudios.jelly.player.PluginPlayer;
+import dev._2lstudios.squidgame.arena.Arena;
+import io.papermc.paper.chat.ChatRenderer;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,6 +22,8 @@ import dev._2lstudios.squidgame.player.SquidPlayer;
 public class AsyncPlayerChatListener implements Listener {
 
     private final SquidGame plugin;
+
+
 
     public AsyncPlayerChatListener(final SquidGame plugin) {
         this.plugin = plugin;
@@ -39,4 +49,6 @@ public class AsyncPlayerChatListener implements Listener {
             }
         }
     }
+
+
 }

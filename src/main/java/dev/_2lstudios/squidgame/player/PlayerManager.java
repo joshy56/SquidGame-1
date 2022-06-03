@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import dev._2lstudios.jelly.player.IPluginPlayerManager;
 import dev._2lstudios.jelly.player.PluginPlayer;
 import dev._2lstudios.squidgame.SquidGame;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class PlayerManager implements IPluginPlayerManager {
 
@@ -32,6 +34,7 @@ public class PlayerManager implements IPluginPlayerManager {
     }
 
     @Override
+    @Nullable
     public PluginPlayer getPlayer(Player player) {
         return this.players.get(player);
     }

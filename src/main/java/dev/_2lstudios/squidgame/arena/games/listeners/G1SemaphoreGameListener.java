@@ -1,6 +1,8 @@
 package dev._2lstudios.squidgame.arena.games.listeners;
 
 import dev._2lstudios.jelly.math.Vector3;
+import dev._2lstudios.jelly.player.PluginPlayer;
+import dev._2lstudios.jelly.utils.ObjectUtils;
 import dev._2lstudios.squidgame.SquidGame;
 import dev._2lstudios.squidgame.arena.Arena;
 import dev._2lstudios.squidgame.arena.ArenaState;
@@ -31,7 +33,7 @@ public final class G1SemaphoreGameListener extends GameListener {
 
 
         if (action instanceof PlayerMoveEvent)
-            onPlayerMove((PlayerMoveEvent) action);
+            onPlayerMove((ArenaDispatchActionEvent<PlayerMoveEvent>) event);
     }
 
     private void onPlayerWin(PlayerGameWinEvent<G1RedGreenLightGame> event) {
@@ -69,44 +71,56 @@ public final class G1SemaphoreGameListener extends GameListener {
                 );
     }
 
-    private void onPlayerMove(PlayerMoveEvent event) {
-        final SquidPlayer player = (SquidPlayer) SquidGame.getInstance().getPlayerManager().getPlayer(event.getPlayer());
-        final Arena arena = player.getArena();
+    private void onPlayerMove(ArenaDispatchActionEvent<PlayerMoveEvent> event) {
+        Optional.ofNullable(SquidGame.getInstance())
+                .ifPresent(
+                        plugin -> {
+                            PluginPlayer pluginPlayer = plugin.getPlayerManager().getPlayer(event.getAction().getPlayer());
+                            if (pluginPlayer == null)
+                                return;
+                            SquidPlayer player = (SquidPlayer) pluginPlayer;
+                            if (!ObjectUtils.checkEquals(player, event.getPlayer()))
+                                return;
 
-        if (arena == null || player.isSpectator())
-            return;
+                            Arena arena = event.getArena();
+                            if (player.isSpectator())
+                                return;
+                            if (!ObjectUtils.checkEquals(arena, player.getArena()))
+                                return;
 
-        ArenaGameBase currentGame = arena.getCurrentGame();
-        final G1RedGreenLightGame game = (G1RedGreenLightGame) currentGame;
+                            ArenaGameBase currentGame = arena.getCurrentGame();
+                            if (!(currentGame instanceof G1RedGreenLightGame))
+                                return;
 
-        if (arena.getState() == ArenaState.EXPLAIN_GAME) {
-            Optional.ofNullable(game.getBarrier())
-                    .filter(spawnZone -> !spawnZone.isBetween(event.getTo()))
-                    .ifPresent(
-                            spawnZone -> {
-                                event.setCancelled(true);
-                                if (spawnZone.isBetween(event.getFrom()))
-                                    event.setTo(event.getFrom());
+                            if (currentGame.getWinners().contains(player))
+                                return;
+
+                            G1RedGreenLightGame game = (G1RedGreenLightGame) currentGame;
+                            if (arena.getState() == ArenaState.EXPLAIN_GAME) {
+                                PlayerMoveEvent moveEvent = event.getAction();
+                                Location from = moveEvent.getFrom(), to = moveEvent.getTo();
+                                Optional.ofNullable(game.getBarrier())
+                                        .filter(spawnZone -> !spawnZone.isBetween(to))
+                                        .ifPresent(
+                                                spawnZone -> {
+                                                    moveEvent.setCancelled(true);
+                                                    if (spawnZone.isBetween(from))
+                                                        moveEvent.setTo(from);
+                                                    else
+                                                        moveEvent.setTo(game.getSpawnPosition());
+                                                }
+                                        );
+                            } else if (arena.getState() == ArenaState.IN_GAME)
+                                if (game.isCanWalk())
+                                    Optional.ofNullable(game.getGoalZone())
+                                            .filter(goalZone -> goalZone.isBetween(player.getBukkitPlayer().getLocation()))
+                                            .ifPresent(goalZone -> new PlayerGameWinEvent<>(game, player).callEvent());
                                 else
-                                    event.setTo(game.getSpawnPosition());
-                            }
-                    );
-        } else if (arena.getState() == ArenaState.IN_GAME) {
-            final Vector3 playerPosition = new Vector3(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ());
-
-            if (game.getWinners().contains(player))
-                return;
-
-            if (game.isCanWalk())
-                Optional.ofNullable(game.getGoalZone())
-                        .filter(goalZone -> goalZone.isBetween(playerPosition))
-                        .ifPresent(
-                                goalZone -> new PlayerGameWinEvent<>(game, player).callEvent()
-                        );
-            else
-                Optional.ofNullable(game.getKillZone())
-                        .filter(killZone -> killZone.isBetween(playerPosition))
-                        .ifPresent(killZone -> arena.killPlayer(player));
-        }
+                                    Optional.ofNullable(game.getKillZone())
+                                            .filter(killZone -> killZone.isBetween(player.getBukkitPlayer().getLocation()))
+                                            .ifPresent(killZone -> arena.killPlayer(player));
+                        }
+                );
     }
+
 }

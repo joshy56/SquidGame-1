@@ -8,7 +8,7 @@ import org.bukkit.event.EventHandler;
 /**
  * Created by joshy23 (justJoshy23 - joshy56) on 2/6/2022.
  */
-public class G4RopePullingGameListener extends GameListener {
+public final class G4RopePullingGameListener extends GameListener {
     @Override
     @EventHandler
     public <T extends Event> void onArenaHandleEvent(ArenaDispatchActionEvent<T> event) {
